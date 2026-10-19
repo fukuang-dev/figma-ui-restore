@@ -53,6 +53,9 @@ document.querySelectorAll('[data-demo]').forEach(demo => {
       });
       demo.querySelector('[data-font-value]').textContent = good ? '24px / 600' : '32px / 600';
       demo.querySelector('[data-radius-value]').textContent = good ? 'radius 8px' : 'radius 16px';
+      demo.querySelector('[data-inspect-font]').textContent = good ? '24px' : '32px';
+      demo.querySelector('[data-inspect-radius]').textContent = good ? '8px' : '16px';
+      demo.querySelector('[data-inspect-color]').textContent = good ? '✓' : '≠';
       const status = demo.querySelector('[data-demo-status]');
       status.textContent = good ? status.dataset.after : status.dataset.before;
     });

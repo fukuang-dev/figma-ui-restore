@@ -54,3 +54,31 @@ Eight generated language pages passed link, canonical, reciprocal-language, site
 Refined for designers and frontend developers: a light canvas, violet identity, an original design-properties/component-code workbench illustration, clearer mode cards, and a matching favicon/social card. Copy, routes, release installation targets and skill behavior are unchanged. The illustration is explicitly labeled as illustrative, not live Figma evidence or a real execution result.
 
 The eight localized pages passed 320px overflow checks. Desktop home and comparison demo were inspected at 1440px; English home and Chinese install at 390px. Copy feedback, mobile navigation, corresponding-document language switching and before/after style changes were rechecked. SEO, link, privacy and asset fingerprint checks passed. Temporary screenshots remain outside the repository.
+
+## Editorial redesign — 2026-10-19
+
+This revision replaces the violet workbench composition with warm off-white, charcoal, restrained vermilion annotations and solid surfaces. The homepage leads with the existing original before/after exercise, now with a synchronized property inspector. Open steps and horizontal workflow rows replace repeated cards. Documentation uses the same typography, spacing, navigation and focus language. No runtime dependencies or fonts were added; installation targets, skill behavior and the eight language routes remain intact.
+
+### Reference research and limits
+
+The owner confirmed there is no website-specific Figma design. This is an original website design, not a pixel-level implementation of the unrelated private product prototype. No private design file was read or published for this work.
+
+The following public homepages were read through web access on 2026-10-19. These observations concern accessible content and information structure, not verified computed styles or animation timing:
+
+| Reference | Observed organization | Application to this website |
+| --- | --- | --- |
+| [Linear](https://linear.app) | Product positioning is followed by detailed interface examples and workflow sections. | Lead with a concrete comparison before explaining the method. |
+| [Vercel](https://vercel.com) | Infrastructure capabilities are grouped around tasks and outcomes, with clear action links. | Keep installation prominent and separate workflows by actual task scope. |
+| [v0](https://v0.app) | A direct creation question introduces examples, templates and capabilities. | Give users a clear first task and a copyable request. |
+| [Framer](https://www.framer.com) | Idea-to-launch positioning is developed through editing and design examples. | Explain the progression from evidence to implementation to verification. |
+| [Cursor](https://cursor.com) | The public page includes interface demonstrations and identifies their illustrative purpose. | Use an original, labeled, interactive teaching example. |
+| [Onlook](https://www.onlook.ai) | Visual engineering is explained with editor and page content rather than abstract feature names alone. | Show the reference, implementation and inspected properties together. |
+| [Lovable](https://lovable.dev) | Creation, refinement and deployment are presented as a connected journey. | Keep the homepage sequence coherent and end with the next concrete action. |
+
+Browser attempts to open Linear, Vercel and Cursor failed with connection closure or navigation timeouts. Their live hover behavior, scroll transitions and current rendered appearance were **not** verified. The other four references were read as web content, without a browser visual review. The palette, typography, spacing, logo and CSS interactions in this revision are our own design decisions; no reference brand assets, customer claims or whole-page layouts were copied.
+
+### Local browser verification
+
+All eight localized pages were checked for document overflow at 320px. Chinese and English desktop homepages were visually inspected at 1440px; Chinese mobile home and installation, plus English mobile home, were checked at 390px. Browser checks covered before/after styling and inspector values, copy feedback, FAQ expansion, mobile menu opening, Escape closing with focus return, and language switching to the equivalent document. No browser script errors were reported during those checks. The original exercise remains illustrative and does not execute Codex, read Figma or send invitations.
+
+Static build, Python compatibility, public-content/link/SEO validation, JavaScript syntax and the seven existing distribution tests passed. Local screenshots remain outside the repository. This does not verify private product designs, every assistive technology or search engine indexing. No Search Console setup was performed.

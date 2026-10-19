@@ -23,6 +23,8 @@ The skill follows your repository's framework, components, internationalization,
 - [Verification and compatibility](#verification-and-compatibility)
 - [Development](#development)
 
+Website: **[Figma UI Restore](https://fukuang-dev.github.io/figma-ui-restore/en/)** · [Website maintenance and SEO](docs/website.md)
+
 ## Quick start
 
 ### 1. Prepare

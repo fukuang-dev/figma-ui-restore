@@ -46,6 +46,18 @@ def check():
         assert page.attributes('html')[0]['lang'] in {'zh-CN','en'},p
         assert page.attributes('meta',name='viewport'),p
         assert page.attributes('link',rel='icon'),p
+        dialog=page.attributes('dialog',id='feedback-dialog')
+        assert len(dialog)==1 and dialog[0].get('aria-labelledby')=='feedback-title',p
+        forms=page.attributes('form',id='feedback-form')
+        assert len(forms)==1 and forms[0]['action']=='https://api.web3forms.com/submit',p
+        key=forms[0].get('data-form-key','')
+        assert not key or re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}',key),p
+        message=page.attributes('textarea',id='feedback-message')[0]
+        assert 'required' in message and message['maxlength']=='3000',p
+        assert page.attributes('input',id='feedback-email')[0]['type']=='email',p
+        assert len(page.attributes('input',name='category'))==3,p
+        assert page.attributes('input',name='botcheck'),p
+        assert any(a.get('src','').split('?')[0].endswith('/feedback.mjs') for a in page.attributes('script',type='module')),p
         robots=page.attributes('meta',name='robots')[0]['content']
         if p.name=='404.html':
             assert 'noindex' in robots,p
@@ -97,7 +109,7 @@ def check():
     private_link=re.compile(r'https?://(?:www\.)?figma\.com/(?:design|proto|file|board|slides|make)/[^\s<>"\x27]+',re.I)
     for directory in [ROOT/'website',SITE]:
         for p in directory.rglob('*'):
-            if p.is_file() and p.suffix in {'.html','.js','.css','.svg','.py','.md','.json','.xml'}:
+            if p.is_file() and p.suffix in {'.html','.js','.mjs','.css','.svg','.py','.md','.json','.xml'}:
                 content=p.read_text(encoding='utf-8')
                 assert not private_link.search(content),(p,'Concrete Figma file URL is not publishable')
     print(f'PASS: {len(urls)} crawlable localized pages, {links} local links/assets, reciprocal languages, canonical/sitemap/JSON-LD and public-content checks')

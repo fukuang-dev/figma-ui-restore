@@ -25,6 +25,9 @@ jobs:
           python-version: '3.10'
       - run: python scripts/validate.py
       - run: python website/build.py
+        env:
+          # Public form ID; forks must configure their own recipient.
+          WEB3FORMS_ACCESS_KEY: ${{ github.repository == 'fukuang-dev/figma-ui-restore' && '92b0b6fb-607e-485e-bcee-f3320f3694c8' || '' }}
       - run: python website/check.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

@@ -14,7 +14,7 @@ node --check website/assets/app.js
 
 Output: `dist/site/` (ignored; do not commit generated pages or screenshots). To preview the production base path, serve a temporary parent directory containing `figma-ui-restore/` with the output files inside. Open `http://localhost:8000/figma-ui-restore/` after starting a local HTTP server on that directory. Do not serve the repository root or Git metadata.
 
-Edit page content and templates in `website/build.py`, styles and behavior in `website/assets/`. Asset URLs include content fingerprints; changing CSS, JavaScript, the favicon or social image changes its URL query automatically, preventing stale styles after deployment. The original social card is a committed 1200×630 PNG; the favicon and teaching illustrations are original assets, not private Figma exports. No third-party fonts, runtime scripts, tracking tools, accounts or server API are used. GitHub itself operates the hosting service; this is not a claim that the host keeps no access logs.
+Edit page content and templates in `website/build.py`, styles and behavior in `website/assets/`. Asset URLs include content fingerprints; changing CSS, JavaScript, the favicon or social image changes its URL query automatically, preventing stale styles after deployment. The original social card is a committed 1200×630 PNG; the favicon and teaching illustrations are original assets, not private Figma exports. No third-party fonts, runtime scripts or tracking tools are loaded by the website. Feedback uses the Web3Forms API only after an explicit form submission; the rest of the website does not require an account or backend API. GitHub itself operates the hosting service; this is not a claim that the host keeps no access logs.
 
 ## Publishing
 
@@ -82,3 +82,24 @@ Browser attempts to open Linear, Vercel and Cursor failed with connection closur
 All eight localized pages were checked for document overflow at 320px. Chinese and English desktop homepages were visually inspected at 1440px; Chinese mobile home and installation, plus English mobile home, were checked at 390px. Browser checks covered before/after styling and inspector values, copy feedback, FAQ expansion, mobile menu opening, Escape closing with focus return, and language switching to the equivalent document. No browser script errors were reported during those checks. The original exercise remains illustrative and does not execute Codex, read Figma or send invitations.
 
 Static build, Python compatibility, public-content/link/SEO validation, JavaScript syntax and the seven existing distribution tests passed. Local screenshots remain outside the repository. This does not verify private product designs, every assistive technology or search engine indexing. No Search Console setup was performed.
+
+
+## Email feedback — 2026-10-19
+
+The footer feedback link progressively enhances to a native `<dialog>` on all localized pages, with GitHub Issues as its no-JavaScript/unsupported-browser fallback. The original exercise and skill instructions are unaffected. The dialog supports a category, required message (5 non-whitespace characters, 3,000 UTF-16 code units maximum) and optional reply email. It includes visible provider disclosure and a link to the provider privacy policy. Drafts stay only in the current page DOM: closing/reopening preserves them, while navigating away or reloading discards them. No local storage, attachments, hidden analytics, query strings or URL fragments are submitted.
+
+`website/assets/feedback.mjs` posts JSON directly to the fixed HTTPS Web3Forms endpoint with cookies omitted. A success UI requires both HTTP success and `success: true`. Rejected submissions, rate limits, malformed responses, network failures and a 20-second timeout keep the fields. There is no automatic retry because a timed-out request may already have been delivered. Pending fields and submit controls are disabled. The hidden `botcheck` field complements the provider's spam filtering; there is no claim that client-side controls stop direct API abuse. hCaptcha is not enabled in this first integration; it can be added if spam becomes a problem. The free service has quotas and no email-delivery guarantee.
+
+### Deployment and reuse
+
+The builder reads optional `WEB3FORMS_ACCESS_KEY`. This is a **public form identifier**, not an SMTP password or secret API token. It is necessarily visible in deployed HTML. Do not supply an email password, mail authorization code or service account credential. Missing configuration disables email submission with a localized explanation and the GitHub fallback; malformed identifiers fail the build.
+
+The Pages workflow supplies the owner-approved public Form ID only when `github.repository` matches this upstream repository. Forks get an empty value and must replace that workflow expression with their own repository/Form ID or provide their own Actions variable. Local builds default to no email delivery. Installing the skill does not configure feedback or send mail. Neither the recipient address nor Form ID is placed in `skills/` or installation examples.
+
+For a local configured preview, set `WEB3FORMS_ACCESS_KEY` to your own public Form ID before running `python3 website/build.py`. Run the existing static checks and `node --test tests/test_feedback.mjs`. The Node tests stub the transport; they do not send emails. Cross-platform CI runs those tests on Node 22, followed by existing Python validation and packaging.
+
+### Verification scope
+
+A single labeled Chinese integration test was submitted through the actual browser form, with the optional reply email blank. Web3Forms accepted it and the UI displayed the success state. This confirms API acceptance, not that a recipient opened it or that it reached the primary inbox. Inbox delivery needs the owner's mailbox confirmation. Do not repeat live tests merely for screenshots. Temporary UI fixtures and screenshot artifacts stay outside the repository.
+
+Local UI checks covered desktop and mobile layouts, all eight language pages at 320×640 without horizontal overflow, blank-message validation, optional-email omission, character count, draft retention, close/Escape focus restoration, and forward/reverse Tab wrapping. An isolated browser fixture simulated a delayed 429 response followed by successful retry: it verified disabled pending controls, retained message/email, retry feedback and the success reset. That fixture made no network requests and is not distributed. Ten Node transport tests, seven existing Python distribution tests and static SEO/public-content checks passed locally. No full screen-reader or real mailbox delivery audit was performed.

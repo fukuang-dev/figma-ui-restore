@@ -4,6 +4,8 @@ import argparse
 import html
 import hashlib
 import json
+import os
+import re
 from pathlib import Path
 import shutil
 from urllib.parse import urlparse
@@ -194,6 +196,49 @@ def article(lang,page,intro,body):
  return f'<div class="wrap doc-layout"><aside class="doc-sidebar"><span class="eyebrow">{d["docs"]}</span><nav aria-label="{d["docs"]}">{sidebar}</nav><a class="source-link" href="{REPO}/releases">v{VERSION} ↗</a></aside><article class="article"><header class="article-head"><span class="eyebrow">FIGMA UI RESTORE / {page.upper()}</span><h1>{d[page]}</h1><p>{intro}</p></header>{body}<div class="doc-next"><span>{d["next"]}</span>{next_link}</div></article></div>'
 
 
+def feedback(lang):
+ zh=lang=='zh'
+ key=os.environ.get('WEB3FORMS_ACCESS_KEY','').strip()
+ if key and not re.fullmatch(r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}',key):
+  raise ValueError('WEB3FORMS_ACCESS_KEY must be a public Web3Forms Form ID (UUID)')
+ d={
+  'title':'把问题告诉我们。' if zh else 'A small note. A better tool.',
+  'intro':'哪里没达到预期？你的反馈会帮助我们改进。' if zh else 'What could work better? Your feedback helps shape what comes next.',
+  'close':'关闭反馈弹窗' if zh else 'Close feedback dialog',
+  'type':'反馈类型' if zh else 'Feedback type',
+  'message':'问题描述' if zh else 'Your message',
+  'placeholder':'请描述遇到的问题、操作步骤，或你希望改进的地方。' if zh else 'Tell us what happened, how to reproduce it, or what you would improve.',
+  'email':'联系邮箱' if zh else 'Your email',
+  'optional':'选填，方便我们回复' if zh else 'Optional, so we can reply',
+  'submit':'提交反馈' if zh else 'Send feedback',
+  'sending':'正在提交…' if zh else 'Sending…',
+  'retry':'重新提交' if zh else 'Try again',
+  'uncertain':'暂未确认提交结果，内容已保留。请稍后重试，或通过 GitHub 反馈。' if zh else 'We could not confirm submission. Your message is preserved. Try again later or use GitHub.',
+  'rate':'提交过于频繁或服务额度暂不可用。内容已保留，请稍后重试，或通过 GitHub 反馈。' if zh else 'Too many requests or service quota unavailable. Your message is preserved. Try later or use GitHub.',
+  'invalid':'提交未被接受。请检查内容后重试，或通过 GitHub 反馈。' if zh else 'Your submission was not accepted. Check your message and try again, or use GitHub.',
+  'short':'请至少填写 5 个非空白字符。' if zh else 'Please enter at least 5 non-whitespace characters.',
+  'unavailable':'邮件反馈暂未配置，请通过 GitHub 提交问题。' if zh else 'Email feedback is not configured. Please use GitHub instead.',
+ }
+ types=[('question','使用问题' if zh else 'Question'),('bug','报告问题' if zh else 'Bug report'),('idea','功能建议' if zh else 'Suggestion')]
+ options=''.join(f'<label class="feedback-choice"><input type="radio" name="category" value="{value}"'+(' checked' if i==0 else '')+f'><span>{label}</span></label>' for i,(value,label) in enumerate(types))
+ messages=' '.join('data-'+name+'="'+esc(d[name])+'"' for name in ['submit','sending','retry','uncertain','rate','invalid','short','unavailable'])
+ return f'''<dialog class="feedback-dialog" id="feedback-dialog" aria-labelledby="feedback-title" aria-describedby="feedback-intro">
+ <div class="feedback-shell"><aside class="feedback-aside" aria-hidden="true"><span class="eyebrow">FIGMA UI<br>RESTORE / FEEDBACK</span><svg viewBox="0 0 96 96" fill="none"><path d="M18 20h48a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H40L24 80V66h-6a8 8 0 0 1-8-8V28a8 8 0 0 1 8-8Z"/><path d="M26 36h31M26 47h21"/><path class="feedback-drawing-accent" d="m67 8 2 8 8 2-8 2-2 8-2-8-8-2 8-2 2-8Z"/></svg><p>{'好工具，<br>从倾听开始。' if zh else 'Better tools<br>start by listening.'}</p><span class="feedback-aside-foot">BUILT WITH CARE.</span></aside>
+ <div class="feedback-main"><button type="button" class="feedback-close" data-feedback-close aria-label="{d['close']}"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+ <div data-feedback-compose><span class="eyebrow feedback-kicker">WE’RE LISTENING</span><h2 id="feedback-title" tabindex="-1" autofocus>{d['title']}</h2><p id="feedback-intro">{d['intro']}</p>
+ <form id="feedback-form" action="https://api.web3forms.com/submit" method="post" data-form-key="{esc(key)}" {messages}>
+ <fieldset class="feedback-fields"><legend class="sr-only">{'填写反馈内容' if zh else 'Write your feedback'}</legend><fieldset class="feedback-types"><legend>{d['type']}</legend><div>{options}</div></fieldset>
+ <label class="feedback-label" for="feedback-message">{d['message']} <span aria-hidden="true">*</span></label><textarea id="feedback-message" name="message" placeholder="{d['placeholder']}" rows="5" required minlength="5" maxlength="3000" aria-describedby="feedback-count"></textarea><div class="feedback-input-meta"><span>{'具体一点，更容易定位问题。' if zh else 'A little detail makes a big difference.'}</span><span id="feedback-count"><span data-feedback-count>0</span> / 3000</span></div>
+ <label class="feedback-label" for="feedback-email">{d['email']} <span class="feedback-optional">{d['optional']}</span></label><input type="email" id="feedback-email" name="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="you@example.com">
+ <div hidden><input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off"></div></fieldset>
+ <p class="feedback-privacy">{('反馈将通过 <a href="https://web3forms.com/privacy" target="_blank" rel="noopener noreferrer">Web3Forms</a> 转发给维护者。请勿填写密码、密钥或私有设计资料。' if zh else 'Feedback is processed by <a href="https://web3forms.com/privacy" target="_blank" rel="noopener noreferrer">Web3Forms</a> and forwarded to the maintainer. Do not include passwords, secrets or private designs.')}</p>
+ <p class="feedback-status" data-feedback-status role="status" aria-live="polite" aria-atomic="true"></p>
+ <div class="feedback-actions"><a class="feedback-alternative" href="{REPO}/issues" target="_blank" rel="noopener noreferrer">{'也可通过 GitHub 反馈' if zh else 'Or use GitHub'} ↗</a><button class="button primary feedback-submit" type="submit">{d['submit']}<span aria-hidden="true">↗</span></button></div>
+ <noscript><p class="feedback-status">{'请启用 JavaScript 使用邮件反馈，或通过上方 GitHub 链接反馈。' if zh else 'Enable JavaScript for email feedback, or use the GitHub link above.'}</p></noscript></form></div>
+ <div class="feedback-success" data-feedback-success hidden><span class="feedback-success-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m6 12 4 4 8-9"/></svg></span><span class="eyebrow">THANK YOU FOR THE DETAILS</span><h3 tabindex="-1">{'反馈已提交。' if zh else 'Your feedback is on its way.'}</h3><p>{'感谢你让这个工具变得更好。服务已接受反馈；如果你留下邮箱，维护者可以通过邮件回复。' if zh else 'Thanks for helping make this tool better. The service accepted your feedback. If you left an email, the maintainer can reply.'}</p><button type="button" class="button primary" data-feedback-close>{'完成' if zh else 'Done'}<span aria-hidden="true">↗</span></button></div>
+ </div></div></dialog>'''
+
+
 def render(lang,page,body,notfound=False):
  d=LABELS[lang]; title,description=META[lang][page]
  url=BASE+'/'+path(lang,page)
@@ -207,9 +252,9 @@ def render(lang,page,body,notfound=False):
 <html lang="{'zh-CN' if lang=='zh' else 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc('404 — Figma UI Restore' if notfound else title)}</title><meta name="description" content="{esc(description)}"><meta name="robots" content="{'noindex,follow' if notfound else 'index,follow,max-image-preview:large'}"><meta name="theme-color" content="#f8f8f5">
 {'' if notfound else f'<link rel="canonical" href="{url}">{alternate}'}
 <meta property="og:type" content="website"><meta property="og:site_name" content="Figma UI Restore"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{url}"><meta property="og:locale" content="{'zh_CN' if lang=='zh' else 'en_US'}"><meta property="og:image" content="{asset("social.png",True)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Figma UI Restore — Every detail. Intentionally restored."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{asset("social.png",True)}">
-<link rel="icon" href="{asset("favicon.svg")}" type="image/svg+xml"><link rel="stylesheet" href="{asset("styles.css")}"><script src="{asset("app.js")}" defer></script><script type="application/ld+json">{structured}</script></head>
+<link rel="icon" href="{asset("favicon.svg")}" type="image/svg+xml"><link rel="stylesheet" href="{asset("styles.css")}"><script src="{asset("app.js")}" defer></script><script type="module" src="{asset("feedback.mjs")}"></script><script type="application/ld+json">{structured}</script></head>
 <body><a class="skip-link" href="#main">{d['skip']}</a><header class="site-header"><div class="wrap nav-inner"><a class="brand" href="{local(lang)}" aria-label="Figma UI Restore / {d['home']}"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span><span>Figma UI Restore<span class="brand-dot">.</span></span></a><button class="menu-toggle" type="button" aria-label="{d['menu']}" aria-expanded="false" aria-controls="site-nav"><span aria-hidden="true">☰</span></button><nav id="site-nav" class="site-nav" aria-label="{'主导航' if lang=='zh' else 'Main navigation'}">{nav}<span class="nav-divider"></span><a class="lang-link" href="{local(other,page)}" lang="{other}" hreflang="{'en' if other=='en' else 'zh-Hans'}">{d['lang']}</a><a class="nav-github" href="{REPO}" aria-label="GitHub">GitHub ↗</a></nav></div></header>
-<main id="main">{body}</main><footer class="site-footer"><div class="wrap footer-top"><div><a class="brand" href="{local(lang)}">Figma UI Restore<span class="brand-dot">.</span></a><p>{d['footer']}</p></div><nav aria-label="{'页脚导航' if lang=='zh' else 'Footer'}">{link(lang,'install',d['install'])}{link(lang,'verification',d['verification'])}<a href="{REPO}/releases">Releases ↗</a><a href="{REPO}/issues">{'反馈问题' if lang=='zh' else 'Report an issue'} ↗</a></nav></div><div class="wrap footer-bottom"><span>© 2026 <a href="https://github.com/fukuang-dev">fukuang-dev</a> · <a href="{REPO}/blob/main/LICENSE">MIT License</a></span><span>{d['legal']}</span></div></footer><div class="sr-only" id="copy-status" role="status" aria-live="polite"></div></body></html>'''
+<main id="main">{body}</main><footer class="site-footer"><div class="wrap footer-top"><div><a class="brand" href="{local(lang)}">Figma UI Restore<span class="brand-dot">.</span></a><p>{d['footer']}</p></div><nav aria-label="{'页脚导航' if lang=='zh' else 'Footer'}">{link(lang,'install',d['install'])}{link(lang,'verification',d['verification'])}<a href="{REPO}/releases">Releases ↗</a><a href="{REPO}/issues" data-feedback-open>{'反馈问题' if lang=='zh' else 'Report an issue'} ↗</a></nav></div><div class="wrap footer-bottom"><span>© 2026 <a href="https://github.com/fukuang-dev">fukuang-dev</a> · <a href="{REPO}/blob/main/LICENSE">MIT License</a></span><span>{d['legal']}</span></div></footer>{feedback(lang)}<div class="sr-only" id="copy-status" role="status" aria-live="polite"></div></body></html>'''
 
 
 def build(base_url):

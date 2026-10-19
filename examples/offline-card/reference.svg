@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-labelledby="title desc">
+  <title id="title">Original offline team activity reference</title>
+  <desc id="desc">An original practice design, not a Figma export. Numeric requirements are in design-spec.json.</desc>
+  <rect width="960" height="640" fill="#f4f6fa"/>
+  <rect x="80.5" y="80.5" width="799" height="376" rx="16" fill="#fff" stroke="#dce2eb"/>
+  <g font-family="Arial, sans-serif">
+    <text x="113" y="125" font-size="12" font-weight="700" letter-spacing="1" fill="#64748b">WORKSPACE</text>
+    <text x="113" y="169" font-size="24" font-weight="700" fill="#172033">Team activity</text>
+    <rect x="623" y="145" width="224" height="40" rx="8" fill="#3758d5"/>
+    <text x="735" y="170" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Invite member</text>
+    <text x="113" y="216" font-size="14" fill="#64748b">A small, original interface for practicing evidence-based visual fixes.</text>
+    <rect x="113" y="247" width="734" height="44" fill="#f4f6fa"/>
+    <g font-size="12" font-weight="600" fill="#64748b"><text x="129" y="274">Member</text><text x="374" y="274">Role</text><text x="618" y="274">Status</text></g>
+    <g font-size="14" font-weight="600" fill="#172033"><text x="129" y="326">Alex Morgan</text><text x="129" y="391">Taylor Kim</text></g>
+    <g font-size="14" fill="#64748b"><text x="374" y="326">Designer</text><text x="374" y="391">Developer</text></g>
+    <path d="M113 355H847M113 420H847" stroke="#dce2eb"/>
+    <g fill="#e8f7ee"><rect x="618" y="307" width="54" height="24" rx="12"/><rect x="618" y="372" width="54" height="24" rx="12"/></g>
+    <g fill="#216843" font-size="12" font-weight="600"><text x="628" y="323">Active</text><text x="628" y="388">Active</text></g>
+    <text x="113" y="446" font-size="12" fill="#64748b">Local demo only. No network requests or real invitations.</text>
+  </g>
+</svg>

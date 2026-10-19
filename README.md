@@ -1,0 +1,295 @@
+# Figma UI Restore
+
+**让 Codex 根据设计证据还原 UI，并在真实浏览器中核对结果。**
+
+[English](README.en.md) · [离线练习](examples/offline-card/README.md) · [更新记录](CHANGELOG.md) · [MIT License](LICENSE)
+
+适用于整页还原、局部视觉修复和只读 UI 验收。把“读取设计 → 定位现有实现 → 最小修改 → 截图对照 → 修正复验”封装为一份可独立安装的 Skill，并提供使用同一份技能内容的插件包装。
+
+不绑定 React、Vue、特定组件库或包管理器；沿用目标项目自己的架构、业务逻辑、国际化、权限和检查要求。技能会根据范围选择流程，局部字号修复无需重复做整页调查。
+
+## 目录
+
+- [快速开始](#快速开始)
+- [安装方式](#安装方式)
+- [连接 Figma](#连接-figma)
+- [准备浏览器和项目](#准备浏览器和项目)
+- [如何使用](#如何使用)
+- [你会收到什么](#你会收到什么)
+- [项目适配](#项目适配)
+- [常见问题](#常见问题)
+- [更新与卸载](#更新与卸载)
+- [验证范围与兼容性](#验证范围与兼容性)
+- [维护与贡献](#维护与贡献)
+
+## 快速开始
+
+### 1. 准备
+
+- 一个可使用技能的 Codex 环境，例如 CLI、IDE 扩展或桌面客户端。
+- 一个能在本地运行的前端项目。
+- 你有权限访问的 Figma **具体节点链接**，或 SVG/PNG/明确数值等离线设计资料。
+- 实际视觉验收需要当前会话可用的浏览器工具。技能不自带浏览器。
+
+### 2. 安装技能
+
+在 Codex 中发送以下内容，由内置安装器处理：
+
+```text
+使用 $skill-installer 安装这个 GitHub 仓库里的技能：
+https://github.com/xiefukang520/figma-ui-restore
+技能目录：skills/figma-ui-restore
+优先使用 v0.1.0 标签。
+如果已有同名技能，先说明冲突，不覆盖已有内容。
+```
+
+没有内置安装器时，使用下文的 Python 安装方式。**三种方式任选一种**，避免同名技能重复出现。
+
+### 3. 连接并验证 Figma
+
+如果已安装官方 Figma 插件/连接器并完成授权，直接复用。否则按 [连接 Figma](#连接-figma) 配置。
+
+第一次先发送一个只读请求：
+
+```text
+读取这个 Figma 节点：【粘贴具体节点链接】。
+请返回节点名称、Frame 尺寸、关键布局/字体/颜色属性，以及对应节点截图。
+先不修改代码。
+```
+
+实际读到属性和截图，才说明设计读取已验证。安装本技能不等于 Figma 已连接。
+
+### 4. 开始第一项任务
+
+在目标前端项目中发送：
+
+```text
+使用 $figma-ui-restore。
+设计：【Figma 具体节点链接】
+目标：【页面路由或组件路径】
+运行地址：【例如 http://localhost:5173/settings】
+请按设计还原，保留现有业务逻辑，并在浏览器中截图对照、修正和复验。
+```
+
+首次可以只选一个弹窗、卡片或表格，确认工作流程正常后再扩大范围。没有 Figma 访问条件时，先完成 [原创离线练习](examples/offline-card/README.md)。
+
+## 安装方式
+
+### 方式 A：通过 Codex 内置安装器
+
+使用快速开始中的提示词。安装器负责从 GitHub 获取 `skills/figma-ui-restore`；不需要运行本仓库脚本。安装目录由你的 Codex 版本与安装器决定，完成后查看其返回路径。
+
+如果安装后没有发现技能，重启 Codex 或重新打开目标项目。仍无法发现时，直接要求 Codex 读取实际安装目录内的 `SKILL.md`，并检查版本支持的发现目录。
+
+### 方式 B：Python 安装，推荐用于项目团队
+
+安装脚本只使用 **Python 3.10+ 标准库**，无需 pip、Node.js 或 npm 包。Windows 可将 `python3` 换成 `py -3`。
+
+```bash
+git clone --branch v0.1.0 --depth 1 https://github.com/xiefukang520/figma-ui-restore.git
+cd figma-ui-restore
+python3 scripts/validate.py
+```
+
+只给一个项目安装，用实际项目根路径替换示例路径：
+
+```bash
+python3 scripts/install.py --project /path/to/your-project --dry-run
+python3 scripts/install.py --project /path/to/your-project
+```
+
+目标为 `<项目根>/.agents/skills/figma-ui-restore/`。路径包含空格时加引号。
+
+个人所有项目共用：
+
+```bash
+python3 scripts/install.py --user --dry-run
+python3 scripts/install.py --user
+```
+
+目标为 `~/.agents/skills/figma-ui-restore/`。安装脚本只复制技能文件，不修改你的 `AGENTS.md`、MCP 配置或凭证；目标已存在时拒绝覆盖。不要同时安装项目版和个人版，也不要覆盖你原来已有的同名自定义技能。
+
+如果没有 Git，可以从 GitHub Releases 下载 ZIP，解压后在解压目录运行相同的安装命令。
+
+### 方式 C：通过插件安装
+
+本仓库包含根目录 `plugin.json` 和 `.agents/plugins/marketplace.json`。支持插件命令的 Codex 版本可使用：
+
+```bash
+codex plugin marketplace add xiefukang520/figma-ui-restore --ref v0.1.0
+codex plugin add figma-ui-restore@figma-ui-restore-community
+```
+
+若当前客户端没有这些命令，使用方式 A/B；可先运行 `codex plugin --help` 检查。支持本地插件目录的桌面客户端也可通过已添加的 marketplace 找到并安装插件。
+
+插件与直接安装共用 `skills/figma-ui-restore/`，无需两者同时安装。插件只包装工作流程，不包含新的 Figma 服务、浏览器工具或自动授权。发布到 GitHub 不代表已进入官方公共插件商店。
+
+当前版本的实际验证状态见 [验证矩阵](docs/verification.md)；未完成的客户端交互验证不会标成已通过。
+
+## 连接 Figma
+
+### 已有官方插件或连接器
+
+沿用当前客户端的 Figma 授权。技能会使用会话中实际可调用的工具，而不会强制创建第二个同名连接。官方工具要求先读取特定设计技能时，遵守其前置规则。
+
+### 使用 Codex CLI 配置远程 MCP
+
+在终端执行前，先查看已有连接，避免重复配置：
+
+```bash
+codex mcp list
+```
+
+没有 Figma 连接时：
+
+```bash
+codex mcp add figma --url https://mcp.figma.com/mcp
+codex mcp login figma
+```
+
+在浏览器完成官方 OAuth 登录，选择有目标文件权限的账号。不要把 token、Cookie 或私有凭证粘贴到聊天、Issue 或仓库。IDE/桌面客户端也可使用自身的 MCP/插件设置界面，界面位置随版本变化，以对应官方文档为准。
+
+CLI 配置与 OAuth 说明：[OpenAI MCP 文档](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)。Figma 服务与权限说明：[Figma 远程 MCP 文档](https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/)。账号资格、文件权限与调用额度以 Figma 当前规则为准，本技能不能改变这些条件。
+
+### 获取具体节点链接
+
+在 Figma 选中要还原的 Frame/组件，使用复制选区链接功能。链接应包含具体节点标识，通常可以看到 `node-id=...`。整份文件首页链接可能无法确定目标；远程 MCP 也不一定知道浏览器里当前选中了什么。
+
+### 连接失败时
+
+权限、额度、网络或节点状态限制出现后，技能会记录具体问题，避免反复请求同一障碍。可改用：
+
+- 已登录 Figma 浏览器中的属性面板与对应图层。
+- 你有权提供的 SVG、PNG 导出。
+- 明确的字号、间距、尺寸、颜色等数值。
+
+离线模式仍可处理已确认部分，但会明确证据来源和缺失项。截图推测不会被写成确定的 Figma 属性，也不会冒充真实连接已验证。
+
+## 准备浏览器和项目
+
+1. 按目标项目自身的 README/`AGENTS.md` 安装依赖并运行开发服务。
+2. 把实际可访问的 URL 告诉 Codex；注明目标语言、状态和参考视口（已知时）。
+3. 确认当前会话具备浏览器截图与页面检查能力。可使用客户端已有浏览器工具或项目已配置的浏览器测试工具；本仓库不自动安装它们。
+4. 页面需要登录时，在工具所用浏览器内完成正常登录。技能不会绕过鉴权或为截图执行真实交易、审批、授权变更。
+
+没有浏览器工具时，仍可执行已授权的代码修改和仓库检查，但结果会标为“视觉未验证”。CLI 本身能修改代码，不代表当前会话一定有浏览器。
+
+## 如何使用
+
+### 整页或弹窗还原
+
+```text
+使用 $figma-ui-restore。
+设计：【节点链接】；目标：【路由/组件】；运行地址：【URL】。
+还原该页面及设计中相关的弹窗/下拉状态。
+沿用现有组件与业务逻辑，先验证一个代表性状态，再扩展其他状态。
+```
+
+### 少量样式快速修复
+
+```text
+使用 $figma-ui-restore。
+对照【节点链接】，只修复【表格区域】的字号、行高和文字颜色。
+保留列宽、数据与交互，使用局部前后截图复验，不扩大为全页重做。
+```
+
+如果直接指定“按钮圆角改为 8px”，技能会把它当作你的明确修改要求，不要求重新读取整个设计文件。
+
+### 只验收，不改代码
+
+```text
+使用 $figma-ui-restore。
+对照【节点链接】检查【运行 URL】。
+只读验收：列出差异、设计值、实际值、影响和相关代码位置，不修改应用代码或基准图。
+```
+
+### 使用离线设计
+
+```text
+使用 $figma-ui-restore。
+设计资料：【当前仓库里的 SVG/PNG/规格文件】。
+目标：【页面】。基于已有证据修正，标明无法确认的设计属性。
+```
+
+### 接手长任务
+
+```text
+使用 $figma-ui-restore，接手【任务状态文件】。
+先核对设计、代码和运行环境是否变化，复用仍有效的证据，继续未完成部分。
+```
+
+长任务可使用 [输入模板](skills/figma-ui-restore/assets/task-brief.md) 和 [状态模板](skills/figma-ui-restore/assets/task-state.md)。普通局部修复无需建立任务目录或填写长表。
+
+## 你会收到什么
+
+根据任务范围，交付通常包括：
+
+- 处理范围、实际修改的文件和主要视觉差异。
+- 关键采用值及其来源：结构化设计属性、属性面板、SVG、用户要求或估计。
+- 实际取得的浏览器截图、computed style 抽样及相关交互检查。
+- 已运行的项目检查与结果、跳过的检查及原因。
+- 尚未确认的设计、工具限制和已批准差异。
+
+“代码已修改”“构建通过”“视觉已验证”分别报告。首次视觉基准是 Figma/明确离线规格，不能通过更新浏览器基准图消除真实设计差异，也不会仅凭编译通过宣称 1:1 还原。
+
+## 项目适配
+
+通常无需额外配置。技能先遵守目标仓库规则，识别现有路由、组件、样式、包管理器和必跑检查。可选地在项目 `AGENTS.md` 加一句：
+
+```text
+UI 还原、Figma 对照验收及局部视觉修复使用 figma-ui-restore 技能；
+沿用本项目组件、国际化、权限和必要检查。局部纯样式任务只读取相关上下文，
+不自动修改 API、业务校验、后端或数据库。
+```
+
+安装器不会替你插入这段内容。项目如果规定更严格的前置流程或服务启动限制，技能不能自行豁免。
+
+临时截图、整页导出、录屏、叠加图和报告放在项目已忽略的本地目录或系统临时目录；运行页面真正使用的图标、插画和字体才作为产品资源保存。公开案例必须拥有再分发权。
+
+## 常见问题
+
+| 问题 | 处理方式 |
+| --- | --- |
+| 安装了技能但找不到 | 重启 Codex；检查实际安装路径及客户端技能发现目录；直接读取已安装的 SKILL.md |
+| 出现两个同名技能 | 检查个人安装、项目安装和插件安装，只保留需要的一处；它们不会自动合并 |
+| 安装器提示目标已存在 | 先备份并确认原有技能内容，不强制覆盖；按更新步骤替换 |
+| 能打开 Figma，但工具读不到 | 浏览器登录与 MCP 授权可能独立；核对账号、文件权限、具体节点及工具错误 |
+| 只有整个文件链接 | 在 Figma 选中目标 Frame/组件后复制选区链接 |
+| 无 Figma 权限或额度不足 | 提供有权分享的导出或具体数值；只验证有证据的范围 |
+| 已改 CSS，页面没变化 | 检查真实服务目录、选择器顺序/优先级、样式继承、HMR 和旧标签缓存 |
+| 字号对了，操作按钮还是换行 | 检查列宽、min-width、white-space、padding 和点击区域 |
+| 没有手机稿 | 沿用项目已有适配并记录假设，不称手机像素级还原 |
+| 想跳过浏览器直接交付 | 可以报告代码和静态检查，但视觉验收仍为未完成 |
+| 插件命令不可用 | 使用内置 Skill Installer 或 Python 安装，不需要升级其他项目依赖 |
+
+## 更新与卸载
+
+**更新直接安装的技能：** 先保存自定义修改，把旧的 `figma-ui-restore` 文件夹移动到技能发现目录之外作为备份；下载目标版本并重新安装。确认新版本可用后再删除备份。安装器没有隐式覆盖模式。
+
+**卸载直接安装的技能：** 删除安装时返回的那个 `figma-ui-restore` 文件夹即可，不要删除整个 `.agents/skills`。若有自定义内容先备份。MCP 连接由你单独管理，卸载技能不会删除已有 Figma 授权。
+
+**插件版：** 使用客户端的卸载界面，或先查看 `codex plugin remove --help` 后卸载 `figma-ui-restore@figma-ui-restore-community`。更新时跟踪需要的版本标签；查看当前客户端 `codex plugin marketplace --help`，更新 marketplace 后刷新/重新安装插件。不要编辑客户端缓存里的技能正文。
+
+## 验证范围与兼容性
+
+查看 [验证矩阵](docs/verification.md)。自动检查覆盖元数据、文件引用、安装内容完整性、拒绝覆盖、路径重定向保护、压缩包与解压安装。CI 配置覆盖 macOS/Linux/Windows；配置存在不等于三个平台都已运行通过。
+
+离线练习验证与真实 Figma OAuth/节点读取、不同客户端插件安装分别记录。技能能改善工作流程，具体还原效果仍取决于设计证据、模型、项目和可用工具。
+
+## 维护与贡献
+
+本仓库只有一份技能源：`skills/figma-ui-restore/`。README 面向使用者；技能入口保持精简，复杂流程在 `references/` 按需读取。
+
+```bash
+python3 scripts/validate.py
+python3 -m unittest discover -s tests -v
+python3 scripts/package.py
+```
+
+最后一条生成 `dist/figma-ui-restore-0.1.0.zip`，不会打包 Git 元数据、本地截图、缓存或输出目录。标签 `v0.1.0` 必须与 `plugin.json` 版本一致，发布工作流才会创建 Release。
+
+提交问题时，请提供客户端版本、任务模式、期望与实际行为、可公开复现步骤；不要附带私有设计链接、客户截图或凭证。贡献尽量提供一个能证明改进的案例，避免为单次特殊业务增加全局规则。
+
+官方参考：[技能创建与发现](https://learn.chatgpt.com/docs/build-skills) · [插件打包](https://developers.openai.com/plugins/build/plugins) · [MCP 配置](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)
+
+本项目为独立社区项目，与 OpenAI、Figma 无官方隶属关系。使用与再分发遵循 [MIT 许可证](LICENSE)。

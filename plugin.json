@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "figma-ui-restore",
+  "version": "0.1.0",
+  "description": "Evidence-based Figma UI implementation, focused visual fixes, and browser verification for Codex.",
+  "author": { "name": "xiefukang520", "url": "https://github.com/xiefukang520" },
+  "homepage": "https://github.com/xiefukang520/figma-ui-restore",
+  "repository": "https://github.com/xiefukang520/figma-ui-restore",
+  "license": "MIT",
+  "keywords": ["figma", "codex", "skills", "design-to-code", "visual-review"]
+}

@@ -1,0 +1,13 @@
+{
+  "origin": "Original offline practice specification authored for this repository; not exported from Figma.",
+  "referenceViewport": { "width": 960, "height": 640 },
+  "language": "en",
+  "font": "Arial, sans-serif",
+  "targets": [
+    { "selector": "h1", "property": "font-size", "expected": "24px", "source": "Explicit offline specification" },
+    { "selector": "button", "property": "border-radius", "expected": "8px", "source": "Explicit offline specification" },
+    { "selector": ".secondary", "property": "color", "expected": "rgb(100, 116, 139)", "source": "Explicit offline specification (#64748b)" }
+  ],
+  "preserve": ["button click handler", "table data", "primary text weight and color", "keyboard focus style", "responsive rules"],
+  "responsiveNote": "Only the 960x640 reference is specified. Existing narrow-screen behavior is implementation context, not a mobile design reference."
+}

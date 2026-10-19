@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offline UI Restore Practice</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <main class="card" aria-labelledby="title">
+    <p class="eyebrow">WORKSPACE</p>
+    <div class="heading"><h1 id="title">Team activity</h1><button id="invite" type="button">Invite member</button></div>
+    <p class="subtitle">A small, original interface for practicing evidence-based visual fixes.</p>
+    <table>
+      <caption class="sr-only">Recent team activity</caption>
+      <thead><tr><th scope="col">Member</th><th scope="col">Role</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr><td class="primary">Alex Morgan</td><td class="secondary">Designer</td><td><span class="badge">Active</span></td></tr>
+        <tr><td class="primary">Taylor Kim</td><td class="secondary">Developer</td><td><span class="badge">Active</span></td></tr>
+      </tbody>
+    </table>
+    <p id="notice" role="status" aria-live="polite">Local demo only. No network requests or real invitations.</p>
+  </main>
+  <script src="demo.js"></script>
+</body>
+</html>

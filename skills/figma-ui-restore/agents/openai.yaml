@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma UI Restore"
+  short_description: "Restore Figma UIs with evidence and browser verification"
+  default_prompt: "Use $figma-ui-restore to compare this Figma node with the target page, make the scoped visual changes, and verify them in a real browser."

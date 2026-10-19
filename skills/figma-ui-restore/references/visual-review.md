@@ -26,6 +26,10 @@ For a shared component, sample affected callers and the localized/long-text cond
 
 Each actionable audit finding should include: area/state, expected value and evidence source, actual browser value/screenshot, impact, likely code location, and recommendation. Prioritize visible layout or readability defects over tiny antialiasing differences. Do not invent a universal acceptable pixel-error percentage.
 
+## Interaction acceptance
+
+For a full audit or an interaction request, also use [interaction-logic.md](interaction-logic.md). Compare the running behavior with product-defined edges; for absent branches, assess the documented project-derived behavior. Execute only authorized, scoped paths. An audit reports differences without edits. Separate unreadable prototype evidence, missing implementation and unexecuted business writes; static screenshots do not establish any of those paths passed.
+
 ## Evidence artifacts
 
 A full review should have the reference, raw browser screenshot and regional observations. Add aligned overlay/diff images when practical; record why they are missing. Focused fixes need only local before/after screenshots and relevant computed styles. Exclude dynamic content only if the mask is documented and does not hide a defect under review.
@@ -37,6 +41,7 @@ Temporary evidence stays in ignored local directories or the system temporary di
 - **Code changed:** the patch exists; this says nothing about browser verification.
 - **Checks passed:** name the checks actually run and their outcomes.
 - **Visually verified:** name the exact reference, route/region/state, viewport and browser evidence.
+- **Interaction paths executed:** identify start state, trigger, expected destination/state, actual result and tested branches.
 - **Unverified/blocked:** state the unavailable tool/input and practical effect.
 
 If the user requested an audit, deliver findings and do not apply fixes, alter baseline images, install dependencies or edit project configuration. If only screenshots were compared, do not claim that interactions were executed.

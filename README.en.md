@@ -15,6 +15,7 @@ The skill follows your repository's framework, components, internationalization,
 - [Connect Figma](#connect-figma)
 - [Prepare the project and browser](#prepare-the-project-and-browser)
 - [Usage recipes](#usage-recipes)
+- [Interaction logic](#interaction-logic-follow-product-flows-analyze-missing-behavior)
 - [Expected deliverables](#expected-deliverables)
 - [Project integration](#project-integration)
 - [Troubleshooting](#troubleshooting)
@@ -34,7 +35,7 @@ Send this to Codex:
 
 ```text
 Use $skill-installer to install skills/figma-ui-restore from
-https://github.com/xiefukang520/figma-ui-restore at tag v0.1.0.
+https://github.com/fukuang-dev/figma-ui-restore at tag v0.2.0.
 If a skill with the same name already exists, explain the conflict before replacing anything.
 ```
 
@@ -80,7 +81,7 @@ If the skill does not appear, restart Codex or reopen the project. You can also 
 Requires **Python 3.10+**, with standard-library modules only. No pip, Node.js or npm dependency is needed. On Windows, replace `python3` with `py -3` if appropriate.
 
 ```bash
-git clone --branch v0.1.0 --depth 1 https://github.com/xiefukang520/figma-ui-restore.git
+git clone --branch v0.2.0 --depth 1 https://github.com/fukuang-dev/figma-ui-restore.git
 cd figma-ui-restore
 python3 scripts/validate.py
 ```
@@ -110,7 +111,7 @@ Without Git, download a release ZIP, extract it, and run these commands from the
 This repository includes root `plugin.json` and `.agents/plugins/marketplace.json`. A Codex version with plugin commands can use:
 
 ```bash
-codex plugin marketplace add xiefukang520/figma-ui-restore --ref v0.1.0
+codex plugin marketplace add fukuang-dev/figma-ui-restore --ref v0.2.0
 codex plugin add figma-ui-restore@figma-ui-restore-community
 ```
 
@@ -208,15 +209,49 @@ and runtime facts, reuse evidence that still applies, and continue remaining wor
 
 Optional [brief](skills/figma-ui-restore/assets/task-brief.md) and [state](skills/figma-ui-restore/assets/task-state.md) templates support multi-page work. Focused fixes do not require a task directory or long questionnaire.
 
+## Interaction logic: follow product flows, analyze missing behavior
+
+**New in 0.2.0.** The skill considers entry points, navigation, overlays, back/cancel and failure outcomes alongside visual fidelity.
+
+| Product evidence | Behavior |
+| --- | --- |
+| Prototype connections, flowchart or explicit specification exists | Read triggers, conditions, actions and targets; implement the defined flow |
+| Only part is defined | Keep defined edges and analyze only missing branches |
+| Relevant accessible sources define no flow | Derive supported UI behavior from current routes, handlers, state and analogous approved interactions |
+| Access/quota/tool limitations prevent reading connections | Mark unknown; continue supported work without claiming the product supplied no flow |
+
+Copy this request:
+
+```text
+Use $figma-ui-restore.
+Design/prototype: [node or proto URL]. Target: [route/component]. Running URL: [URL].
+Improve the page interaction logic. Follow product prototype connections, flowcharts
+and explicit instructions when present. Analyze unspecified branches using existing
+code and project conventions, implement supported UI behavior and label inferences.
+Execute the scoped main path and affected branches in the browser; report behavior
+and visual verification separately.
+```
+
+Keep starting-point and node parameters when sharing a prototype URL. Authorized flow exports or written specifications also work. You do not need to draw a complete flow before asking; only blocking business decisions need clarification.
+
+Expect a concise table: **source → start state → trigger/condition → action/target → retention/feedback → actual result**. Sources distinguish product-defined, project-inherited, implementation-inferred and unknown. Navigation, back, overlays, variants and conditional actions retain their semantics; each Frame does not automatically become a route.
+
+Inference fills supported UI gaps; it does not authorize new APIs, relaxed permissions, removed validation or changed financial/authentication state. Skipping onboarding does not imply skipping identity verification. Preserve business guards when a design conflicts with them, identify the affected dependency and continue independent work. Focused typography/color fixes still keep their small scope.
+
+Browser acceptance exercises relevant main, conditional, back, cancel/close and failure/retry paths. External writes require authorized test data or existing mocks; unexecuted paths remain explicit. Reading edges, comparing screenshots, passing a build and executing application behavior are separate results.
+
+See the [interaction reference](skills/figma-ui-restore/references/interaction-logic.md) and [original scenario exercise](examples/interaction-flows/README.md).
+
 ## Expected deliverables
 
 - Implemented scope, changed files and major differences resolved.
 - Key adopted values and sources: structured design properties, property panel, SVG, explicit user override or estimate.
 - Browser screenshots, relevant computed-style samples and interactions actually checked.
+- Flow sources, executed paths, expected/actual behavior and unexecuted branches with reasons.
 - Repository check results, skipped checks and reasons.
 - Missing evidence, tool limitations and approved deviations.
 
-“Code changed,” “build passed,” and “visually verified” are separate claims. First acceptance compares against Figma or explicit offline requirements. Updating an unapproved browser baseline to silence a test is not acceptance, and compilation alone does not prove 1:1 fidelity.
+“Code changed,” “build passed,” “visually verified,” and “interaction paths executed” are separate claims. First acceptance compares against Figma or explicit offline requirements. Updating an unapproved browser baseline to silence a test is not acceptance, and compilation alone does not prove 1:1 fidelity.
 
 ## Project integration
 
@@ -226,6 +261,9 @@ Usually no configuration is needed. The skill reads repository instructions and 
 Use figma-ui-restore for Figma implementations, UI comparison and focused visual fixes.
 Preserve our components, i18n, permissions and required checks. Keep focused styling
 tasks local; do not automatically change APIs, business validation, backend code or data.
+For interaction tasks, follow product connections/flowcharts; analyze missing behavior
+from existing code, label inference, and keep unreadable flows unknown. Verify browser
+interactions separately from screenshot fidelity.
 ```
 
 The installer does not insert this text. Stricter project context or service-start rules still apply.
@@ -272,7 +310,7 @@ python3 -m unittest discover -s tests -v
 python3 scripts/package.py
 ```
 
-Packaging creates `dist/figma-ui-restore-0.1.0.zip` without Git data, caches or local evidence. Release tags must match `plugin.json` (for example, `v0.1.0`) before the release workflow publishes the archive.
+Packaging creates `dist/figma-ui-restore-0.2.0.zip` without Git data, caches or local evidence. Release tags must match `plugin.json` (for example, `v0.2.0`) before the release workflow publishes the archive.
 
 For an issue, provide client version, mode, expected/actual behavior and public reproduction steps. Do not include private design links, customer screenshots or credentials. Prefer a reproducible case over broad new rules for a one-off business requirement.
 

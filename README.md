@@ -15,6 +15,7 @@
 - [连接 Figma](#连接-figma)
 - [准备浏览器和项目](#准备浏览器和项目)
 - [如何使用](#如何使用)
+- [页面交互逻辑](#页面交互逻辑有产品流程就按流程没有就自主分析)
 - [你会收到什么](#你会收到什么)
 - [项目适配](#项目适配)
 - [常见问题](#常见问题)
@@ -37,9 +38,9 @@
 
 ```text
 使用 $skill-installer 安装这个 GitHub 仓库里的技能：
-https://github.com/xiefukang520/figma-ui-restore
+https://github.com/fukuang-dev/figma-ui-restore
 技能目录：skills/figma-ui-restore
-优先使用 v0.1.0 标签。
+优先使用 v0.2.0 标签。
 如果已有同名技能，先说明冲突，不覆盖已有内容。
 ```
 
@@ -86,7 +87,7 @@ https://github.com/xiefukang520/figma-ui-restore
 安装脚本只使用 **Python 3.10+ 标准库**，无需 pip、Node.js 或 npm 包。Windows 可将 `python3` 换成 `py -3`。
 
 ```bash
-git clone --branch v0.1.0 --depth 1 https://github.com/xiefukang520/figma-ui-restore.git
+git clone --branch v0.2.0 --depth 1 https://github.com/fukuang-dev/figma-ui-restore.git
 cd figma-ui-restore
 python3 scripts/validate.py
 ```
@@ -116,7 +117,7 @@ python3 scripts/install.py --user
 本仓库包含根目录 `plugin.json` 和 `.agents/plugins/marketplace.json`。支持插件命令的 Codex 版本可使用：
 
 ```bash
-codex plugin marketplace add xiefukang520/figma-ui-restore --ref v0.1.0
+codex plugin marketplace add fukuang-dev/figma-ui-restore --ref v0.2.0
 codex plugin add figma-ui-restore@figma-ui-restore-community
 ```
 
@@ -220,6 +221,37 @@ CLI 配置与 OAuth 说明：[OpenAI MCP 文档](https://learn.chatgpt.com/docs/
 
 长任务可使用 [输入模板](skills/figma-ui-restore/assets/task-brief.md) 和 [状态模板](skills/figma-ui-restore/assets/task-state.md)。普通局部修复无需建立任务目录或填写长表。
 
+## 页面交互逻辑：有产品流程就按流程，没有就自主分析
+
+**0.2.0 新增。** 除了视觉还原，技能会检查页面如何进入、如何跳转、弹窗如何关闭，以及返回、取消和失败后的去向。
+
+| 产品资料情况 | 技能怎么处理 |
+| --- | --- |
+| 有 Figma Prototype 连线、流程图或明确说明 | 读取触发元素、条件、动作和目标，按产品定义实现 |
+| 只画了一部分 | 保留已定义流程，仅分析缺失分支 |
+| 相关资料确实没有定义流程 | 结合现有路由、组件事件、状态和同类交互，自主补齐可推导的界面行为 |
+| 权限、额度或工具导致连线未读到 | 标为“尚未读取”，继续有依据的部分，不把未知当成产品未画 |
+
+可直接复制：
+
+```text
+使用 $figma-ui-restore。
+设计/原型：【Figma 节点或 proto 链接】；目标：【路由/组件】；运行地址：【URL】。
+优化该页面交互：产品有连线、页面流程图或说明时按产品的来；
+没有定义的部分，自行分析现有代码和项目惯例并实施可确定的 UI 交互，标明推导依据。
+先核对主路径及相关分支，完成后在浏览器实际验证，分别报告交互和视觉结果。
+```
+
+提供 `/proto/` 链接时，尽量保留起点和节点参数；也可提供有权分享的流程图或明确说明。用户不用先替 agent 画完整流程。技能会复用既有交互，只集中询问确实阻塞的业务决定。
+
+产出一份简短流程表：**来源 → 起点 → 触发/条件 → 动作/目标 → 数据保留与反馈 → 实际验证结果**。来源区分“产品明确”“项目继承”“实现推导”“待确认”。导航、返回、弹层、组件状态和条件分支分别识别，不把所有连线都做成新路由。
+
+自主分析仅补齐有依据的界面行为，不能凭设计缺失新增接口、放开权限、取消校验或更改资金/认证状态。“跳过引导”不代表“跳过身份认证”。冲突分支保留现有业务约束并说明缺口，其余工作继续。纯字号、颜色等快速修复仍保留原交互，不扩大成整站流程设计。
+
+交互验收会实际操作本次主路径和受影响的返回、取消、关闭、失败/重试及条件分支；涉及外部写入时使用已授权测试环境或已有 mock，无法执行的项明确写“未验证”。**读取连线、截图对比、构建通过、交互跑通分别报告。**
+
+规则见 [交互逻辑参考](skills/figma-ui-restore/references/interaction-logic.md)，可用 [原创情境练习](examples/interaction-flows/README.md) 检查不同输入下的处理方式。
+
 ## 你会收到什么
 
 根据任务范围，交付通常包括：
@@ -227,10 +259,11 @@ CLI 配置与 OAuth 说明：[OpenAI MCP 文档](https://learn.chatgpt.com/docs/
 - 处理范围、实际修改的文件和主要视觉差异。
 - 关键采用值及其来源：结构化设计属性、属性面板、SVG、用户要求或估计。
 - 实际取得的浏览器截图、computed style 抽样及相关交互检查。
+- 本次交互流程依据、已执行路径、预期/实际结果，以及未执行分支和原因。
 - 已运行的项目检查与结果、跳过的检查及原因。
 - 尚未确认的设计、工具限制和已批准差异。
 
-“代码已修改”“构建通过”“视觉已验证”分别报告。首次视觉基准是 Figma/明确离线规格，不能通过更新浏览器基准图消除真实设计差异，也不会仅凭编译通过宣称 1:1 还原。
+“代码已修改”“构建通过”“视觉已验证”“交互已执行”分别报告。首次视觉基准是 Figma/明确离线规格，不能通过更新浏览器基准图消除真实设计差异，也不会仅凭编译通过宣称 1:1 还原。
 
 ## 项目适配
 
@@ -240,6 +273,8 @@ CLI 配置与 OAuth 说明：[OpenAI MCP 文档](https://learn.chatgpt.com/docs/
 UI 还原、Figma 对照验收及局部视觉修复使用 figma-ui-restore 技能；
 沿用本项目组件、国际化、权限和必要检查。局部纯样式任务只读取相关上下文，
 不自动修改 API、业务校验、后端或数据库。
+交互任务优先读取产品连线/流程图；无定义则分析已有实现并标注推导，
+未读到的流程标为未知，浏览器交互验证与截图验收分别报告。
 ```
 
 安装器不会替你插入这段内容。项目如果规定更严格的前置流程或服务启动限制，技能不能自行豁免。
@@ -286,7 +321,7 @@ python3 -m unittest discover -s tests -v
 python3 scripts/package.py
 ```
 
-最后一条生成 `dist/figma-ui-restore-0.1.0.zip`，不会打包 Git 元数据、本地截图、缓存或输出目录。标签 `v0.1.0` 必须与 `plugin.json` 版本一致，发布工作流才会创建 Release。
+最后一条生成 `dist/figma-ui-restore-0.2.0.zip`，不会打包 Git 元数据、本地截图、缓存或输出目录。标签 `v0.2.0` 必须与 `plugin.json` 版本一致，发布工作流才会创建 Release。
 
 提交问题时，请提供客户端版本、任务模式、期望与实际行为、可公开复现步骤；不要附带私有设计链接、客户截图或凭证。贡献尽量提供一个能证明改进的案例，避免为单次特殊业务增加全局规则。
 

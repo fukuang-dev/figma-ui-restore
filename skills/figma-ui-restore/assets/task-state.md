@@ -14,6 +14,11 @@ Update current facts instead of appending the whole conversation. Optional for l
 | Region/state | Expected value/source | Actual value | Adopted value/approved difference | Result |
 | --- | --- | --- | --- | --- |
 
+| Source/status | Start state | Trigger/condition | Action/destination | Retention/feedback | Actual browser result |
+| --- | --- | --- | --- | --- | --- |
+
+Keep product facts, inherited project behavior, implementation inference and unknowns separate. Record unexecuted branches and their reasons; a screenshot is not a flow execution.
+
 - Completed:
 - Remaining:
 - Blocked dependencies and missing decisions:

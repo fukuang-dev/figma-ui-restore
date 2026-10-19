@@ -10,6 +10,8 @@ Record the frontend working directory, current changes, actual running service/p
 
 Obtain matching properties, a node screenshot, necessary assets, and the relevant open/closed/selected/empty/error/loading/disabled states. [Access guidance](figma-access.md) covers fallback paths. Existing still-valid evidence can be reused.
 
+For interaction scope, read [interaction-logic.md](interaction-logic.md) before coding: establish product-defined edges and missing/unknown branches, then map them to existing routes and component states. Full acceptance includes this flow check; focused styling keeps its smaller scope.
+
 ## 2. Build a small evidence/difference table
 
 For each important visual item record: design layer/state; evidence source; expected value; current value; proposed code location; adopted value or approved difference. Keep facts separate from implementation assumptions. A concise work note is enough; persistent task documents are optional for longer work.
@@ -44,6 +46,8 @@ Reload cleanly before final evidence. Use overlays/diff images when available wi
 Validate only the relevant combinations: supplied desktop/narrow/mobile Frames, relevant dialogs/dropdowns, selected states, keyboard focus and affected localized layouts. If no mobile design exists, use existing project conventions, record the assumption, and do not claim mobile pixel fidelity. Do not invent new navigation behavior.
 
 The first acceptance baseline is Figma (or the user's explicit offline specification). Only an accepted browser result can become a later regression baseline. Never update a baseline merely to silence a failing screenshot test.
+
+Execute the scoped main path and affected branches from the interaction table: navigation, conditions, back/cancel/close, feedback and state retention as applicable. Record expected/actual results and unexecuted paths separately from screenshots. Use authorized test data or existing mocks for writes; report blocked live effects instead of executing them merely for acceptance.
 
 ## 5. Close out proportionately
 

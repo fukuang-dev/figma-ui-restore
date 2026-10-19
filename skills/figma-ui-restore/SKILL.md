@@ -1,6 +1,6 @@
 ---
 name: figma-ui-restore
-description: "Implement or verify an existing Figma design in a frontend project, or fix specific visual differences in typography, spacing, alignment, colors, icons, and controls. Use for UI 还原、还原 Figma、高保真还原、像素级还原、对照设计稿、UI 验收. Supports full implementation, focused fixes, and read-only audits; not free-form design or backend-only work."
+description: "Implement or verify an existing Figma design in a frontend project, or fix specific visual differences in typography, spacing, alignment, colors, icons, and controls. Use for UI 还原、还原 Figma、高保真还原、像素级还原、对照设计稿、UI 验收. Supports full implementation, focused fixes, and read-only audits; not free-form design or backend-only work. Includes product prototype/page-flow logic and its acceptance; not general product design without a reference."
 ---
 
 # Figma UI Restore
@@ -31,6 +31,10 @@ Judge actual scope rather than keywords: a "quick" whole-page implementation sti
 - Keep temporary screenshots, exports, overlays, diffs, recordings, and test reports in an already ignored local directory or a system temporary directory. Runtime assets may enter the repository. Do not place temporary evidence in public/build asset directories or publish private designs, credentials, and customer data.
 - Do not automatically create agents, worktrees, task documents, commits, pushes, database changes, or deployments. A skill invocation does not grant those permissions.
 
+## Interaction logic
+
+For page interaction implementation/optimization or full UI acceptance, read [interaction-logic.md](references/interaction-logic.md). Follow product-defined prototype connections, flowcharts and explicit specifications. When a flow is absent, analyze existing routes, handlers, states and project conventions; implement supported UI behavior and label its source. Partial flows keep their defined edges; unreadable connections are unknown, not absent. Do not replace product flow with intuition or invent business/API semantics. Pure styling fixes preserve behavior and need no whole-flow investigation.
+
 ## Focused fix: locate → change → verify
 
 1. **Lock a verifiable target.** Use explicit user values, a supplied reference, valid prior evidence, or the relevant Figma component/text properties. User-requested overrides take precedence; record them as overrides rather than design facts. If the target is identifiable, proceed without a lengthy brief.
@@ -53,4 +57,4 @@ For multi-page work that needs persistent context, optionally use [task-brief.md
 
 ## Completion
 
-Distinguish **code changed**, **checks passed**, **visually verified**, and **blocked/unverified**. Full restore needs real screenshots and relevant state verification; a read-only audit delivers findings without a code patch. Build success, HTTP 200, and a screenshot regression against an unapproved baseline do not prove Figma fidelity.
+Distinguish **code changed**, **checks passed**, **visually verified**, **interaction paths executed**, and **blocked/unverified**. Reading prototype edges or capturing screenshots does not execute an application flow. Full restore needs real screenshots and relevant state verification; a read-only audit delivers findings without a code patch. Build success, HTTP 200, and a screenshot regression against an unapproved baseline do not prove Figma fidelity.

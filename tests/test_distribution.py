@@ -1,4 +1,5 @@
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -25,9 +26,9 @@ class InstallationTests(unittest.TestCase):
                 if file.is_file():
                     self.assertEqual(file.read_bytes(), (installed / file.relative_to(source)).read_bytes())
             marker = installed / 'local-note.md'
-            marker.write_text('Preserve my local changes.')
+            marker.write_text('Preserve my local changes.', encoding='utf-8')
             self.assertNotEqual(run('--project', project).returncode, 0)
-            self.assertEqual(marker.read_text(), 'Preserve my local changes.')
+            self.assertEqual(marker.read_text(encoding='utf-8'), 'Preserve my local changes.')
 
     def test_dry_run_does_not_create_configuration(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -61,6 +62,12 @@ class InstallationTests(unittest.TestCase):
 
 
 class PackageTests(unittest.TestCase):
+    def test_metadata_reads_work_without_utf8_locale(self):
+        environment = dict(os.environ, LC_ALL='C', PYTHONCOERCECLOCALE='0')
+        result = subprocess.run([sys.executable, '-X', 'utf8=0', str(ROOT / 'scripts/validate.py')],
+                                env=environment, capture_output=True, text=True, encoding='utf-8')
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_release_excludes_local_evidence_and_can_install(self):
         result = subprocess.run([sys.executable, str(ROOT / 'scripts/package.py')], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)

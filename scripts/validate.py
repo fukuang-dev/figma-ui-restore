@@ -14,11 +14,11 @@ def package_files(root=ROOT):
 
 
 def validate():
-    manifest = json.loads((ROOT / 'plugin.json').read_text())
+    manifest = json.loads((ROOT / 'plugin.json').read_text(encoding='utf-8'))
     assert manifest['name'] == 'figma-ui-restore'
     assert re.fullmatch(r'\d+\.\d+\.\d+', manifest['version'])
     assert manifest['license'] == 'MIT'
-    marketplace = json.loads((ROOT / '.agents/plugins/marketplace.json').read_text())
+    marketplace = json.loads((ROOT / '.agents/plugins/marketplace.json').read_text(encoding='utf-8'))
     entry = marketplace['plugins'][0]
     assert entry['name'] == manifest['name']
     assert (ROOT / entry['source']['path']).resolve() == ROOT
@@ -26,7 +26,7 @@ def validate():
     assert entry['policy']['authentication'] in {'ON_USE', 'ON_INSTALL'}
 
     skill = ROOT / 'skills' / manifest['name']
-    text = (skill / 'SKILL.md').read_text()
+    text = (skill / 'SKILL.md').read_text(encoding='utf-8')
     # This package deliberately uses a tiny YAML subset; not a general YAML parser.
     frontmatter = re.match(r'\A---\nname: ([a-z0-9-]+)\ndescription: ("[^\n]*")\n---\n', text)
     assert frontmatter, 'Invalid skill frontmatter for this package'
@@ -34,7 +34,7 @@ def validate():
     description = json.loads(frontmatter[2])
     assert 0 < len(description) <= 1024
     assert not re.search(r'^\s*\[TODO:', text, re.M)
-    yaml = (skill / 'agents/openai.yaml').read_text()
+    yaml = (skill / 'agents/openai.yaml').read_text(encoding='utf-8')
     fields = dict((key, json.loads(value)) for key, value in re.findall(r'^  (\w+): (".*")$', yaml, re.M))
     assert {'display_name', 'short_description', 'default_prompt'} <= fields.keys()
     assert 25 <= len(fields['short_description']) <= 64
@@ -48,13 +48,13 @@ def validate():
         relative = file.relative_to(ROOT)
         assert not any(part.startswith('.env') for part in relative.parts), relative
         if file.suffix in {'.md', '.json', '.yaml', '.py', '.html', '.css', '.js', '.svg'}:
-            content = file.read_text()
+            content = file.read_text(encoding='utf-8')
             # Patterns are built here so the validator's own source is distributable.
             forbidden = ['Jillion' + 'Pay', 'jillion' + 'tech', '/Users' + '/', 'BEGIN ' + 'OPENSSH PRIVATE KEY']
             assert not any(value.lower() in content.lower() for value in forbidden), f'Private source leaked: {relative}'
         if file.suffix != '.md':
             continue
-        for link in re.findall(r'!?\[[^\]]*\]\(([^)\s]+)\)', file.read_text()):
+        for link in re.findall(r'!?\[[^\]]*\]\(([^)\s]+)\)', file.read_text(encoding='utf-8')):
             if re.match(r'[a-zA-Z][a-zA-Z0-9+.-]*:', link) or link.startswith('#'):
                 continue
             destination = (file.parent / link.split('#')[0]).resolve()

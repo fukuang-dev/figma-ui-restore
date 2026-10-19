@@ -14,7 +14,7 @@ node --check website/assets/app.js
 
 Output: `dist/site/` (ignored; do not commit generated pages or screenshots). To preview the production base path, serve a temporary parent directory containing `figma-ui-restore/` with the output files inside. Open `http://localhost:8000/figma-ui-restore/` after starting a local HTTP server on that directory. Do not serve the repository root or Git metadata.
 
-Edit page content and templates in `website/build.py`, styles and behavior in `website/assets/`. The original social card is a committed 1200×630 PNG; the favicon and teaching illustrations are original assets, not private Figma exports. No third-party fonts, runtime scripts, tracking tools, accounts or server API are used. GitHub itself operates the hosting service; this is not a claim that the host keeps no access logs.
+Edit page content and templates in `website/build.py`, styles and behavior in `website/assets/`. Asset URLs include content fingerprints; changing CSS, JavaScript, the favicon or social image changes its URL query automatically, preventing stale styles after deployment. The original social card is a committed 1200×630 PNG; the favicon and teaching illustrations are original assets, not private Figma exports. No third-party fonts, runtime scripts, tracking tools, accounts or server API are used. GitHub itself operates the hosting service; this is not a claim that the host keeps no access logs.
 
 ## Publishing
 
@@ -48,3 +48,9 @@ SEO 检查覆盖页面标题、描述、canonical、多语言互链、结构化�
 ## Local verification record — 2026-10-19
 
 Eight generated language pages passed link, canonical, reciprocal-language, sitemap, JSON-LD and public-content checks. All eight rendered without document horizontal overflow at 320px. The Chinese home was inspected at 1440px; English home and Chinese installation were inspected at 390px. Browser actions confirmed the 32px/16px to 24px/8px demo transition, successful copy feedback, mobile navigation open/Escape close, and corresponding-document language switching. These are website checks, not acceptance of a user’s live design or proof of search-engine indexing.
+
+## Visual refinement — 2026-10-19
+
+Refined for designers and frontend developers: a light canvas, violet identity, an original design-properties/component-code workbench illustration, clearer mode cards, and a matching favicon/social card. Copy, routes, release installation targets and skill behavior are unchanged. The illustration is explicitly labeled as illustrative, not live Figma evidence or a real execution result.
+
+The eight localized pages passed 320px overflow checks. Desktop home and comparison demo were inspected at 1440px; English home and Chinese install at 390px. Copy feedback, mobile navigation, corresponding-document language switching and before/after style changes were rechecked. SEO, link, privacy and asset fingerprint checks passed. Temporary screenshots remain outside the repository.

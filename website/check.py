@@ -3,6 +3,7 @@
 from html.parser import HTMLParser
 from pathlib import Path
 import json
+import hashlib
 import re
 from urllib.parse import urlsplit, unquote
 import xml.etree.ElementTree as ET
@@ -65,7 +66,8 @@ def check():
             assert description and description not in descriptions,p
             descriptions.add(description)
             assert page.attributes('meta',property='og:url')[0]['content']==expected,p
-            assert page.attributes('meta',property='og:image')[0]['content']==BASE+'assets/social.png',p
+            image=urlsplit(page.attributes('meta',property='og:image')[0]['content'])
+            assert image.scheme+'://'+image.netloc+image.path==BASE+'assets/social.png' and image.query=='v='+hashlib.sha256((SITE/'assets/social.png').read_bytes()).hexdigest()[:10],p
             assert page.attributes('meta',name='twitter:card')[0]['content']=='summary_large_image',p
             assert len(page.json)==1 and page.json[0]['@context']=='https://schema.org',p
             assert any(v['@type']=='WebPage' and v['url']==expected for v in page.json[0]['@graph']),p
@@ -83,6 +85,8 @@ def check():
             else:dest=p.parent/unquote(parsed.path)
             if dest.is_dir():dest/='index.html'
             assert dest.is_file(),(p,'Broken local target',value)
+            if parsed.path.startswith(PREFIX+'assets/'):
+                assert parsed.query=='v='+hashlib.sha256(dest.read_bytes()).hexdigest()[:10],(p,'Stale asset fingerprint',value)
             if parsed.fragment and dest in pages:assert unquote(parsed.fragment) in pages[dest].ids,(p,'Broken anchor',value)
             links+=1
     sitemap=ET.parse(SITE/'sitemap.xml').getroot()

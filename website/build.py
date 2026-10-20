@@ -239,6 +239,17 @@ def feedback(lang):
  </div></div></dialog>'''
 
 
+def analytics():
+    """Optional public beacon identifier. Local builds and forks default to no analytics."""
+    token=os.environ.get('CLOUDFLARE_WEB_ANALYTICS_TOKEN','').strip()
+    if not token:
+        return ''
+    if not re.fullmatch(r'[0-9a-fA-F]{32}',token):
+        raise ValueError('CLOUDFLARE_WEB_ANALYTICS_TOKEN must be a public 32-character beacon token')
+    config=esc(json.dumps({'token':token},separators=(',',':')))
+    return '<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="'+config+'"></script>'
+
+
 def render(lang,page,body,notfound=False):
  d=LABELS[lang]; title,description=META[lang][page]
  url=BASE+'/'+path(lang,page)
@@ -254,13 +265,14 @@ def render(lang,page,body,notfound=False):
 <meta property="og:type" content="website"><meta property="og:site_name" content="Figma UI Restore"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{url}"><meta property="og:locale" content="{'zh_CN' if lang=='zh' else 'en_US'}"><meta property="og:image" content="{asset("social.png",True)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Figma UI Restore — Every detail. Intentionally restored."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{asset("social.png",True)}">
 <link rel="icon" href="{asset("favicon.svg")}" type="image/svg+xml"><link rel="stylesheet" href="{asset("styles.css")}"><script src="{asset("app.js")}" defer></script><script type="module" src="{asset("feedback.mjs")}"></script><script type="application/ld+json">{structured}</script></head>
 <body><a class="skip-link" href="#main">{d['skip']}</a><header class="site-header"><div class="wrap nav-inner"><a class="brand" href="{local(lang)}" aria-label="Figma UI Restore / {d['home']}"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span><span>Figma UI Restore<span class="brand-dot">.</span></span></a><button class="menu-toggle" type="button" aria-label="{d['menu']}" aria-expanded="false" aria-controls="site-nav"><span aria-hidden="true">☰</span></button><nav id="site-nav" class="site-nav" aria-label="{'主导航' if lang=='zh' else 'Main navigation'}">{nav}<span class="nav-divider"></span><a class="lang-link" href="{local(other,page)}" lang="{other}" hreflang="{'en' if other=='en' else 'zh-Hans'}">{d['lang']}</a><a class="nav-github" href="{REPO}" aria-label="GitHub">GitHub ↗</a></nav></div></header>
-<main id="main">{body}</main><footer class="site-footer"><div class="wrap footer-top"><div><a class="brand" href="{local(lang)}">Figma UI Restore<span class="brand-dot">.</span></a><p>{d['footer']}</p></div><nav aria-label="{'页脚导航' if lang=='zh' else 'Footer'}">{link(lang,'install',d['install'])}{link(lang,'verification',d['verification'])}<a href="{REPO}/releases">Releases ↗</a><a href="{REPO}/issues" data-feedback-open>{'反馈问题' if lang=='zh' else 'Report an issue'} ↗</a></nav></div><div class="wrap footer-bottom"><span>© 2026 <a href="https://github.com/fukuang-dev">fukuang-dev</a> · <a href="{REPO}/blob/main/LICENSE">MIT License</a></span><span>{d['legal']}</span></div></footer>{feedback(lang)}<div class="sr-only" id="copy-status" role="status" aria-live="polite"></div></body></html>'''
+<main id="main">{body}</main><footer class="site-footer"><div class="wrap footer-top"><div><a class="brand" href="{local(lang)}">Figma UI Restore<span class="brand-dot">.</span></a><p>{d['footer']}</p></div><nav aria-label="{'页脚导航' if lang=='zh' else 'Footer'}">{link(lang,'install',d['install'])}{link(lang,'verification',d['verification'])}<a href="{REPO}/releases">Releases ↗</a><a href="{REPO}/issues" data-feedback-open>{'反馈问题' if lang=='zh' else 'Report an issue'} ↗</a></nav></div><div class="wrap footer-bottom"><span>© 2026 <a href="https://github.com/fukuang-dev">fukuang-dev</a> · <a href="{REPO}/blob/main/LICENSE">MIT License</a></span><span>{d['legal']}</span></div></footer>{feedback(lang)}<div class="sr-only" id="copy-status" role="status" aria-live="polite"></div>{analytics()}</body></html>'''
 
 
 def build(base_url):
  global BASE,PREFIX
  parsed=urlparse(base_url)
  if parsed.scheme!='https' or not parsed.netloc or parsed.query or parsed.fragment:raise ValueError('Use an absolute HTTPS base URL without query/fragment')
+ analytics()  # Validate deployment configuration before replacing output.
  BASE=base_url.rstrip('/');PREFIX=parsed.path.rstrip('/')+'/'
  if OUT.exists():shutil.rmtree(OUT)
  OUT.mkdir(parents=True)

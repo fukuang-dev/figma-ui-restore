@@ -40,7 +40,7 @@ def check():
     assert len(files)==9, 'Expected eight localized pages and one 404'
     pages={p:Page(p.read_text(encoding='utf-8')) for p in files}
     urls={BASE+p.relative_to(SITE).as_posix().removesuffix('index.html'):p for p in files if p.name!='404.html'}
-    titles=set();descriptions=set();links=0
+    titles=set();descriptions=set();links=0;analytics_configs=set()
     for p,page in pages.items():
         assert page.h1==1,(p,'Exactly one meaningful H1 required')
         assert page.attributes('html')[0]['lang'] in {'zh-CN','en'},p
@@ -58,6 +58,14 @@ def check():
         assert len(page.attributes('input',name='category'))==3,p
         assert page.attributes('input',name='botcheck'),p
         assert any(a.get('src','').split('?')[0].endswith('/feedback.mjs') for a in page.attributes('script',type='module')),p
+        beacons=page.attributes('script',src='https://static.cloudflareinsights.com/beacon.min.js')
+        assert len(beacons)<=1,(p,'Analytics must not be duplicated')
+        if beacons:
+            assert beacons[0].get('type')=='module',p
+            config=json.loads(beacons[0]['data-cf-beacon'])
+            assert set(config)=={'token'} and re.fullmatch(r'[0-9a-fA-F]{32}',config['token']),p
+            analytics_configs.add(config['token'])
+        else:analytics_configs.add('')
         robots=page.attributes('meta',name='robots')[0]['content']
         if p.name=='404.html':
             assert 'noindex' in robots,p
@@ -101,6 +109,7 @@ def check():
                 assert parsed.query=='v='+hashlib.sha256(dest.read_bytes()).hexdigest()[:10],(p,'Stale asset fingerprint',value)
             if parsed.fragment and dest in pages:assert unquote(parsed.fragment) in pages[dest].ids,(p,'Broken anchor',value)
             links+=1
+    assert len(analytics_configs)==1, 'Analytics configuration must match across localized pages and 404'
     sitemap=ET.parse(SITE/'sitemap.xml').getroot()
     locs={x.text for x in sitemap.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')}
     assert locs==set(urls), 'Sitemap does not match canonical pages'

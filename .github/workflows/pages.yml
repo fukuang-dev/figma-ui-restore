@@ -28,6 +28,8 @@ jobs:
         env:
           # Public form ID; forks must configure their own recipient.
           WEB3FORMS_ACCESS_KEY: ${{ github.repository == 'fukuang-dev/figma-ui-restore' && '92b0b6fb-607e-485e-bcee-f3320f3694c8' || '' }}
+          # Public beacon ID; copies and forks must supply their own analytics account.
+          CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ github.repository == 'fukuang-dev/figma-ui-restore' && '4e9a115aa6ee469f8e1dc3f07178945f' || '' }}
       - run: python website/check.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

@@ -4,6 +4,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 import json
 import hashlib
+import html
 import re
 from urllib.parse import urlsplit, unquote
 import xml.etree.ElementTree as ET
@@ -37,10 +38,10 @@ class Page(HTMLParser):
 
 def check():
     files=sorted(SITE.rglob('*.html'))
-    assert len(files)==9, 'Expected eight localized pages and one 404'
+    assert len(files)==11, 'Expected ten localized pages and one 404'
     pages={p:Page(p.read_text(encoding='utf-8')) for p in files}
     urls={BASE+p.relative_to(SITE).as_posix().removesuffix('index.html'):p for p in files if p.name!='404.html'}
-    titles=set();descriptions=set();links=0;analytics_configs=set()
+    titles=set();descriptions=set();links=0;analytics_configs=set();software_by_language={}
     for p,page in pages.items():
         assert page.h1==1,(p,'Exactly one meaningful H1 required')
         assert page.attributes('html')[0]['lang'] in {'zh-CN','en'},p
@@ -74,7 +75,7 @@ def check():
             canonical=page.attributes('link',rel='canonical')
             expected=BASE+p.relative_to(SITE).as_posix().removesuffix('index.html')
             assert len(canonical)==1 and canonical[0]['href']==expected,(p,'Incorrect canonical')
-            alternate=page.attributes('link',rel='alternate')
+            alternate=[a for a in page.attributes('link',rel='alternate') if 'hreflang' in a]
             assert {a['hreflang'] for a in alternate}=={'zh-Hans','en','x-default'},p
             for a in alternate:
                 assert a['href'] in urls,(p,'Missing language target')
@@ -90,7 +91,37 @@ def check():
             assert image.scheme+'://'+image.netloc+image.path==BASE+'assets/social.png' and image.query=='v='+hashlib.sha256((SITE/'assets/social.png').read_bytes()).hexdigest()[:10],p
             assert page.attributes('meta',name='twitter:card')[0]['content']=='summary_large_image',p
             assert len(page.json)==1 and page.json[0]['@context']=='https://schema.org',p
-            assert any(v['@type']=='WebPage' and v['url']==expected for v in page.json[0]['@graph']),p
+            graph=page.json[0]['@graph']
+            assert any(v['@type']=='WebPage' and v['url']==expected for v in graph),p
+            software=next(v for v in graph if v['@type']=='SoftwareSourceCode')
+            language=page.attributes('html')[0]['lang']
+            assert software['name']=='Figma UI Restore' and software['codeRepository']==software['sameAs'],p
+            if language in software_by_language:
+                assert software_by_language[language]==software,(p,'Project identity must not change between pages')
+            software_by_language[language]=software
+            if p.parent.name=='codex-figma-ui-tools':
+                article=next(v for v in graph if v['@type']=='Article')
+                assert page.attributes('time',datetime=article['dateModified']),p
+                assert page.attributes('a',href=article['author']['url']) and page.attributes('a',href=software['codeRepository']+'/blob/main/docs/verification.md'),p
+            text_links=page.attributes('link',rel='alternate',type='text/markdown')
+            assert len(text_links)==1 and text_links[0]['href']==expected+'index.md',p
+            document=p.with_suffix('.md')
+            markdown=document.read_text(encoding='utf-8')
+            assert f'Canonical: {expected}' in markdown and description in markdown,p
+            assert len(re.findall(r'^```',markdown,re.M))%2==0,(document,'Unbalanced code fences')
+            # Text exports keep source commands exactly, including multiline prompts.
+            source=p.read_text(encoding='utf-8')
+            for command in re.findall(r'<pre><code>(.*?)</code></pre>',source,re.S):
+                assert html.unescape(command) in markdown,(document,'Export corrupted a command')
+            for target in re.findall(r'\]\((https?://[^)]+)\)',markdown):
+                if target.startswith(BASE):
+                    destination=urlsplit(target)
+                    relative=unquote(destination.path[len(PREFIX):])
+                    resolved=SITE/relative
+                    if resolved.is_dir():resolved/='index.html'
+                    assert resolved.is_file(),(document,'Broken exported link',target)
+                    if destination.fragment and resolved in pages:
+                        assert unquote(destination.fragment) in pages[resolved].ids,(document,'Broken exported anchor',target)
         for tag,attrs in page.tags:
             if tag=='a':value=attrs.get('href','')
             elif tag in {'script','img'}:value=attrs.get('src','')
@@ -113,12 +144,20 @@ def check():
     sitemap=ET.parse(SITE/'sitemap.xml').getroot()
     locs={x.text for x in sitemap.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')}
     assert locs==set(urls), 'Sitemap does not match canonical pages'
+    assert {u.removeprefix(BASE) for u in urls}=={
+        '', 'install/', 'workflows/', 'verification/', 'codex-figma-ui-tools/',
+        'en/', 'en/install/', 'en/workflows/', 'en/verification/', 'en/codex-figma-ui-tools/'}, 'Missing expected search landing page'
+    index=(SITE/'llms.txt').read_text(encoding='utf-8')
+    indexed=set(re.findall(r'\]\((https?://[^)]+)\)',index))
+    assert {u+'index.md' for u in urls}=={u for u in indexed if u.startswith(BASE)}, 'Reading index must cover all documents'
+    assert not (SITE/'robots.txt').exists(), 'Project-subpath robots.txt cannot control crawling'
+    assert not (SITE/'404.md').exists(), 'Do not export an indexable error document'
     assert (SITE/'assets/social.png').read_bytes().startswith(b'\x89PNG\r\n\x1a\n')
     # Any concrete design-file URL is inappropriate for these public generic sources.
     private_link=re.compile(r'https?://(?:www\.)?figma\.com/(?:design|proto|file|board|slides|make)/[^\s<>"\x27]+',re.I)
     for directory in [ROOT/'website',SITE]:
         for p in directory.rglob('*'):
-            if p.is_file() and p.suffix in {'.html','.js','.mjs','.css','.svg','.py','.md','.json','.xml'}:
+            if p.is_file() and p.suffix in {'.html','.js','.mjs','.css','.svg','.py','.md','.json','.xml','.txt'}:
                 content=p.read_text(encoding='utf-8')
                 assert not private_link.search(content),(p,'Concrete Figma file URL is not publishable')
     print(f'PASS: {len(urls)} crawlable localized pages, {links} local links/assets, reciprocal languages, canonical/sitemap/JSON-LD and public-content checks')

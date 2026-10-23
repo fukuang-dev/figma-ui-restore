@@ -10,16 +10,20 @@ from pathlib import Path
 import shutil
 from urllib.parse import urlparse
 from xml.etree.ElementTree import Element, SubElement, ElementTree
+from discovery import markdown_document, tools_content
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'dist/site'
 REPO = 'https://github.com/fukuang-dev/figma-ui-restore'
 VERSION = json.loads((ROOT / 'plugin.json').read_text(encoding='utf-8'))['version']
-PAGES = ('home', 'install', 'workflows', 'verification')
+PAGES = ('home', 'install', 'workflows', 'verification', 'codex-figma-ui-tools')
 LABELS = {
  'zh': {'home':'首页','install':'快速开始','workflows':'使用指南','verification':'验收方法','lang':'English','menu':'打开导航','skip':'跳到正文','github':'GitHub 源码','copy':'复制','copied':'已复制','copyfail':'无法自动复制，请选中并手动复制。','footer':'以设计证据还原，以浏览器结果验收。','legal':'独立社区开源项目，与 OpenAI、Figma 无官方隶属关系。','back':'返回首页','docs':'使用文档','next':'继续阅读','author':'作者'},
  'en': {'home':'Home','install':'Quick start','workflows':'Workflows','verification':'Verification','lang':'中文','menu':'Open navigation','skip':'Skip to content','github':'View on GitHub','copy':'Copy','copied':'Copied','copyfail':'Copy unavailable. Select the text and copy it manually.','footer':'Restore from evidence. Verify in the browser.','legal':'Independent open-source community project. Not affiliated with OpenAI or Figma.','back':'Back home','docs':'Documentation','next':'Keep reading','author':'By'}
 }
+LABELS['zh']['codex-figma-ui-tools']='工具选型'
+LABELS['en']['codex-figma-ui-tools']='Tool guide'
+GUIDE_REVIEWED = '2026-10-23'
 META = {
  'zh': {
   'home': ('Figma UI Restore — Codex Figma UI 还原与交互验收技能','开源 Codex 技能，支持 Figma 页面还原、局部样式修复、产品原型交互流程和 UI 验收。提供安装教程、调用示例与真实浏览器验证方法。'),
@@ -32,6 +36,12 @@ META = {
   'workflows': ('Figma Implementation and Interaction Workflows — Figma UI Restore','Use full-page implementation, focused visual fixes and read-only UI audits. Follow product prototype flows and analyze missing UI behavior from existing code.'),
   'verification': ('Visual and Interaction Verification — Figma UI Restore','Separate code checks, design evidence, browser visual comparison and executed interaction paths. Explore the original demo, acceptance checklist and tested scope.')}
 }
+META['zh']['codex-figma-ui-tools']=(
+ 'Codex 连接 Figma 还原 UI：工具选型与搭配指南 — Figma UI Restore',
+ 'Codex 还原 Figma 产品 UI 该用什么工具？比较 Figma 官方 MCP、Figma UI Restore、Playwright 和 Code Connect 的分工、适用场景与限制，附安装入口和验证依据。')
+META['en']['codex-figma-ui-tools']=(
+ 'Codex Figma UI Tools: MCP, Skills and Browser Verification — Figma UI Restore',
+ 'Choose tools for implementing Figma designs with Codex. Compare Figma MCP, Figma UI Restore, Playwright and Code Connect by role, use case, requirements and verification evidence.')
 
 def esc(text): return html.escape(str(text), quote=True)
 def asset(name, absolute=False):
@@ -78,8 +88,8 @@ def mode_icon(index):
 def home(lang):
  zh=lang=='zh'
  if zh:
-  hero='设计的每一处，<br><span class="hero-second">都值得被还原。</span>'
-  lead='让 Codex 沿着设计证据工作。从 Figma 到现有代码，再到浏览器验收，让视觉与交互都经得起对照。'
+  hero='用 Codex，<br><span class="hero-second">还原 Figma UI。</span>'
+  lead='Figma UI Restore 是开源 Codex UI 还原技能：搭配 Figma 官方 MCP 与浏览器工具，在现有项目中完成整页还原、局部样式修复和只读 UI 验收。'
   modes=[('01','整页还原','先锁定原稿、状态与资产，再实现一个可验收样板，逐步扩展。','完整实现'),('02','局部修复','字号、间距、颜色或控件尺寸，只定位相关组件，最小修改后局部复验。','快速模式'),('03','只读验收','逐项列出设计值、运行值、证据与影响；保留代码和现有基准。','审查模式')]
   workflow=[('READ','读取真正的设计证据','结构化属性决定数值，截图用于整体对照；估计始终标明为估计。'),('BUILD','融入你的现有项目','复用组件、国际化和正式资产，沿用业务逻辑与 API。'),('VERIFY','在浏览器里核对结果','查看实际样式、状态与点击结果，修正差异后再验一次。')]
   policytitle='页面怎么走，<br>也属于还原。'
@@ -87,8 +97,8 @@ def home(lang):
   flows=[('01','产品有定义','读取原型连线、流程图和说明，保留触发条件、动作与目标。'),('02','产品未定义','结合当前路由、组件状态和同类交互，补齐有依据的 UI 行为。'),('03','证据未读取','明确权限或工具缺口；未知不等于产品没画，不猜测业务规则。')]
   questions=[('需要安装什么？','需要支持技能的 Codex 环境。实时读取设计还需要 Figma 连接，视觉验收还需要当前会话可用的浏览器工具。'),('支持 React 之外的项目吗？','技能不绑定特定框架，沿用目标项目的技术栈、组件、包管理器和必要检查。'),('会改动我的业务逻辑吗？','默认保留 API、权限、校验和业务状态约束。产品流程与现有业务约束冲突时，列出具体缺口，不自行绕过。'),('安装后会自动连接 Figma 吗？','不会。技能提供工作流程，Figma 授权和浏览器能力由使用环境单独提供。')]
  else:
-  hero='Every detail.<br><span class="hero-second">Intentionally restored.</span>'
-  lead='Give Codex a workflow grounded in evidence. Read Figma, work inside your existing project, follow product flows, and verify the result in a real browser.'
+  hero='Figma to code.<br><span class="hero-second">With Codex.</span>'
+  lead='Figma UI Restore is an open-source Codex skill for implementing Figma designs, focused visual fixes and read-only UI audits in existing projects. Pair it with Figma MCP and browser tools.'
   modes=[('01','Full implementation','Establish the reference, states and assets. Verify one representative slice before expanding.','FULL RESTORE'),('02','Focused fixes','Correct typography, spacing, color or control sizing with a small patch and local verification.','FOCUSED MODE'),('03','Read-only audits','Report expected and actual values, evidence and impact. Leave code and baselines untouched.','AUDIT MODE')]
   workflow=[('READ','Read real design evidence','Structured properties establish values. Screenshots support the comparison. Estimates stay labeled.'),('BUILD','Fit your existing project','Reuse components, localization and original assets. Preserve business behavior and APIs.'),('VERIFY','Check the running browser','Inspect actual styles, states and interaction outcomes. Correct differences, then check again.')]
   policytitle='The way it works<br>is part of the design.'
@@ -104,7 +114,7 @@ def home(lang):
  return f'''<section class="hero wrap"><div class="hero-heading"><a class="release-pill" href="{REPO}/releases/tag/v{VERSION}"><span></span> CODEX SKILL <b>v{VERSION}</b><span aria-hidden="true">↗</span></a><h1>{hero}</h1></div><div class="hero-copy"><span class="eyebrow">DESIGN INTENT. PRESERVED.</span><p class="hero-lead">{lead}</p><div class="hero-actions">{link(lang,'install',first+' <span aria-hidden="true">↗</span>','button primary')}<a class="text-link" href="#preview">{'先看效果' if zh else 'Explore the demo'} <span aria-hidden="true">↓</span></a></div><p class="hero-meta">OPEN SOURCE <span>/</span> MIT LICENSE</p></div></section>
  <section class="wrap product-preview" id="preview" aria-label="{'原创样式对照演示' if zh else 'Original style comparison demo'}">{demo(lang)}<div class="preview-caption"><span>FIG. 01 — {'让差异可见，让结果可验。' if zh else 'Make differences visible. Make results verifiable.'}</span><span>FIGMA → CODE → BROWSER</span></div></section>
  <div class="principles wrap"><span>{'为设计师与前端开发者打造' if zh else 'FOR DESIGNERS & FRONTEND DEVELOPERS'}</span><div><span>{'设计证据优先' if zh else 'Evidence first'}</span><span>{'保留现有业务' if zh else 'Existing business logic'}</span><span>{'浏览器复验' if zh else 'Browser verified'}</span></div></div>
- <section class="wrap section process"><div class="section-heading"><span class="eyebrow">01 / THE METHOD</span><h2>{'还原，是一条完整的链路。' if zh else 'A complete path from intent to interface.'}</h2><p>{'读取、实现、核对。每一步都有输入，也有可检查的结果。' if zh else 'Read, implement, verify. Each step has a source and an outcome you can inspect.'}</p></div><div class="process-grid">{steps}</div></section>
+ <section class="wrap section process"><div class="section-heading"><span class="eyebrow">01 / THE METHOD</span><h2>{'还原，是一条完整的链路。' if zh else 'A complete path from intent to interface.'}</h2><p>{'读取、实现、核对。每一步都有输入，也有可检查的结果。' if zh else 'Read, implement, verify. Each step has a source and an outcome you can inspect.'}</p><p>{link(lang,'codex-figma-ui-tools',('Codex 连接 Figma 还原 UI，工具怎么选？' if zh else 'Which tools should you use for Figma to code with Codex?')+' ↗','text-link')}</p></div><div class="process-grid">{steps}</div></section>
  <section class="workflow-section"><div class="wrap section"><div class="section-heading"><span class="eyebrow">02 / YOUR SCOPE</span><h2>{'做好这一页，<br>也修好这一处。' if zh else 'The whole interface.<br>Or just one detail.'}</h2><p>{'按任务范围选择流程。完整实现有闭环，局部修改保持专注。' if zh else 'Match the process to the task. Full work gets a complete loop. Small fixes stay focused.'}</p></div><div class="mode-list">{modehtml}</div></div></section>
  <section class="wrap section flow-grid"><div class="flow-intro"><span class="eyebrow">03 / BEYOND THE PIXELS</span><h2>{policytitle}</h2><p>{policytext}</p>{link(lang,'workflows',('了解交互流程规则' if zh else 'Explore interaction rules')+' ↗','text-link')}<div class="flow-map" aria-label="{'产品流程示意' if zh else 'Illustrative product flow'}"><span>{'页面' if zh else 'Page'}</span><i aria-hidden="true">→</i><span>{'触发 / 条件' if zh else 'Trigger'}</span><i aria-hidden="true">→</i><span>{'目标状态' if zh else 'Target'}</span></div></div><div class="flow-list">{flowhtml}</div></section>
  <section class="start-band"><div class="wrap section start-section"><div><span class="eyebrow">04 / START BUILDING</span><h2>{'下一次还原，<br>从这里开始。' if zh else 'A better starting point.<br>For your next interface.'}</h2><p>{'安装技能，提供设计节点与目标页面。把这段请求复制到 Codex，开始第一项任务。' if zh else 'Install the skill, provide your design and target page, then send this first request to Codex.'}</p>{link(lang,'install',('查看安装步骤' if zh else 'Installation guide')+' ↗','text-link')}</div>{code(prompt,lang,'CODEX / FIRST TASK')}</div></section>
@@ -127,7 +137,7 @@ def install(lang):
   sections=section('01 / 准备环境',prereq)+section('02 / 使用内置安装器',f'<p>在 Codex 中发送下面的请求。安装完成后查看返回路径；如果技能尚未出现，重启 Codex 或重新打开项目。</p>{code(installer,lang,"CODEX / INSTALL")}')
   sections+=section('03 / 或者，用 Python 安装',f'<p>只需要 Python 3.10+ 标准库。Windows 可将 <code>python3</code> 换成 <code>py -3</code>。先克隆固定版本：</p>{code(clone_cmd,lang,"TERMINAL")}<p>在现有项目中安装，替换成你的实际项目路径：</p>{code(project_cmd,lang,"PROJECT INSTALL")}<p>目标为 <code>&lt;项目&gt;/.agents/skills/figma-ui-restore/</code>。也可使用 <code>--user</code> 安装到个人技能目录。安装器拒绝覆盖，不修改 AGENTS.md、MCP 配置或凭证。</p>')
   sections+=section('04 / 插件安装方式',f'<p>支持插件命令的客户端可使用以下方式；先通过 <code>codex plugin --help</code> 确认当前版本支持。插件与直接安装共用一份技能，无需同时安装。</p>{code(plugin_cmd,lang,"PLUGIN")}')
-  sections+=section('05 / 确认 Figma 连接',f'<p>复用已授权的官方 Figma 插件或连接器。尚未配置时，按 <a href="https://learn.chatgpt.com/docs/extend/mcp?surface=cli">Codex MCP 文档</a>和 <a href="https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/">Figma 远程 MCP 文档</a>完成连接。先检查现有连接，避免重复配置。</p>{code(mcp_zh,lang,"TERMINAL / OPTIONAL")}<p>在 Figma 选中目标 Frame 或组件，复制具体节点链接。先请 Codex 只读返回节点名称、尺寸、关键属性和对应截图，实际取得证据后再开始还原。使用离线规格无需 Figma 登录，但需标注证据来源。</p>')
+  sections+=section('05 / 确认 Figma 连接',f'<p>复用已授权的官方 Figma 插件或连接器。尚未配置时，按 <a href="https://learn.chatgpt.com/docs/extend/mcp?surface=cli">Codex MCP 文档</a>和 <a href="https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/">Figma 远程 MCP 文档</a>完成连接。先检查现有连接，避免重复配置。</p>{code(mcp_zh,lang,"TERMINAL / OPTIONAL")}<p>在 Figma 选中目标 Frame 或组件，复制具体节点链接。先请 Codex 只读返回节点名称、尺寸、关键属性和对应截图，实际取得证据后再开始还原。使用离线规格无需 Figma 登录，但需标注证据来源。</p>','figma')
   sections+=section('06 / 发起第一次任务',code('使用 $figma-ui-restore。\n设计：[你的具体节点或原型链接]\n目标：[路由或组件路径]\n运行地址：[你的本地预览地址]\n还原该页面及相关交互。保留现有业务逻辑，\n在浏览器中对照、修正和复验，分别报告视觉与交互结果。',lang)+callout('更新已有安装','先备份自定义修改，把旧技能移到发现目录之外，再安装新版。不要把旧备份留成另一个同名技能。')+f'<p>更多说明：<a href="{REPO}/blob/main/README.md">完整中文 README</a>。</p>')
  else:
   intro='Install the skill, then verify design and browser access. Choose one installation method to avoid duplicate copies.'
@@ -136,7 +146,7 @@ def install(lang):
   sections+=section('02 / Built-in installer',f'<p>Send the request below to Codex. Check the returned path and restart Codex or reopen the project if discovery has not refreshed.</p>{code(installer,lang,"CODEX / INSTALL")}')
   sections+=section('03 / Or install with Python',f'<p>Requires Python 3.10+ standard library only. On Windows, use <code>py -3</code> if appropriate.</p>{code(clone_cmd,lang,"TERMINAL")}<p>Replace the example with your existing project directory:</p>{code(project_cmd,lang,"PROJECT INSTALL")}<p>The destination is <code>&lt;project&gt;/.agents/skills/figma-ui-restore/</code>. Use <code>--user</code> for your personal skill directory instead. The installer refuses existing destinations and does not edit AGENTS.md, MCP settings or credentials.</p>')
   sections+=section('04 / Plugin installation',f'<p>Check <code>codex plugin --help</code> for client support. The plugin wraps the same skill; do not install both copies.</p>{code(plugin_cmd,lang,"PLUGIN")}')
-  sections+=section('05 / Verify Figma access',f'<p>Reuse your authorized official Figma plugin or connector. For setup, follow <a href="https://learn.chatgpt.com/docs/extend/mcp?surface=cli">Codex MCP documentation</a> and <a href="https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/">Figma remote MCP documentation</a>. Inspect existing connections first.</p>{code(mcp_en,lang,"TERMINAL / OPTIONAL")}<p>Copy a link to the actual Frame or component. First request a read-only check returning the node name, dimensions, key properties and matching screenshot. Offline specifications do not require Figma login; label the evidence source.</p>')
+  sections+=section('05 / Verify Figma access',f'<p>Reuse your authorized official Figma plugin or connector. For setup, follow <a href="https://learn.chatgpt.com/docs/extend/mcp?surface=cli">Codex MCP documentation</a> and <a href="https://developers.figma.com/docs/figma-mcp-server/remote-server-installation/">Figma remote MCP documentation</a>. Inspect existing connections first.</p>{code(mcp_en,lang,"TERMINAL / OPTIONAL")}<p>Copy a link to the actual Frame or component. First request a read-only check returning the node name, dimensions, key properties and matching screenshot. Offline specifications do not require Figma login; label the evidence source.</p>','figma')
   sections+=section('06 / Run your first task',code('Use $figma-ui-restore.\nDesign: [your specific node or prototype URL]\nTarget: [route or component]\nRunning URL: [your local preview URL]\nRestore this page and its relevant interactions.\nPreserve business behavior; compare, fix and re-check\nin the browser. Report visual and interaction results separately.',lang)+callout('Updating an existing install','Back up custom changes, move the old skill outside discovery directories, and install the new version. Do not leave a second discoverable copy.')+f'<p>More details: <a href="{REPO}/blob/main/README.en.md">complete English README</a>.</p>')
  return article(lang,'install',intro,sections)
 
@@ -188,12 +198,18 @@ def verification(lang):
  return article(lang,'verification',intro,body)
 
 
-def article(lang,page,intro,body):
+def tools(lang):
+ heading,intro,sections=tools_content(lang,REPO,local(lang,'install'),local(lang,'workflows'),local(lang,'verification'))
+ body=''.join(section(title,content,anchor) for title,anchor,content in sections)
+ return article(lang,'codex-figma-ui-tools',intro,body,heading=heading)
+
+
+def article(lang,page,intro,body,heading=None):
  d=LABELS[lang]
  sidebar=''.join(link(lang,p,d[p],'doc-link'+(' active' if p==page else '')) for p in PAGES[1:])
  nextpage=PAGES[(PAGES.index(page)+1)%len(PAGES)]
  next_link=link(lang,nextpage,d[nextpage]+" ↗")
- return f'<div class="wrap doc-layout"><aside class="doc-sidebar"><span class="eyebrow">{d["docs"]}</span><nav aria-label="{d["docs"]}">{sidebar}</nav><a class="source-link" href="{REPO}/releases">v{VERSION} ↗</a></aside><article class="article"><header class="article-head"><span class="eyebrow">FIGMA UI RESTORE / {page.upper()}</span><h1>{d[page]}</h1><p>{intro}</p></header>{body}<div class="doc-next"><span>{d["next"]}</span>{next_link}</div></article></div>'
+ return f'<div class="wrap doc-layout"><aside class="doc-sidebar"><span class="eyebrow">{d["docs"]}</span><nav aria-label="{d["docs"]}">{sidebar}</nav><a class="source-link" href="{REPO}/releases">v{VERSION} ↗</a></aside><article class="article"><header class="article-head"><span class="eyebrow">FIGMA UI RESTORE / {page.upper()}</span><h1>{heading or d[page]}</h1><p>{intro}</p></header>{body}<div class="doc-next"><span>{d["next"]}</span>{next_link}</div></article></div>'
 
 
 def feedback(lang):
@@ -256,16 +272,23 @@ def render(lang,page,body,notfound=False):
  other='en' if lang=='zh' else 'zh'
  nav=''.join(link(lang,p,d[p],'nav-link'+(' current' if p==page else '')) for p in PAGES[1:])
  alternate=''.join(f'<link rel="alternate" hreflang="{l}" href="{BASE}/{path(k,page)}">' for k,l in [('zh','zh-Hans'),('en','en')])+f'<link rel="alternate" hreflang="x-default" href="{BASE}/{path("zh",page)}">'
- graph=[{'@type':'WebSite','@id':BASE+'/#website','url':BASE+'/','name':'Figma UI Restore','inLanguage':['zh-Hans','en']},{'@type':'SoftwareSourceCode','@id':BASE+'/#software','name':'Figma UI Restore','description':description,'codeRepository':REPO,'license':REPO+'/blob/main/LICENSE','version':VERSION,'author':{'@type':'Person','name':'fukuang-dev','url':'https://github.com/fukuang-dev'}},{'@type':'WebPage','@id':url+'#webpage','url':url,'name':title,'description':description,'inLanguage':'zh-Hans' if lang=='zh' else 'en','isPartOf':{'@id':BASE+'/#website'},'about':{'@id':BASE+'/#software'}}]
+ author={'@type':'Person','name':'fukuang-dev','url':'https://github.com/fukuang-dev'}
+ graph=[{'@type':'WebSite','@id':BASE+'/#website','url':BASE+'/','name':'Figma UI Restore','inLanguage':['zh-Hans','en']},{'@type':'SoftwareSourceCode','@id':BASE+'/#software','name':'Figma UI Restore','description':META[lang]['home'][1],'url':BASE+'/'+path(lang),'codeRepository':REPO,'sameAs':REPO,'license':REPO+'/blob/main/LICENSE','version':VERSION,'author':author},{'@type':'WebPage','@id':url+'#webpage','url':url,'name':title,'description':description,'inLanguage':'zh-Hans' if lang=='zh' else 'en','isPartOf':{'@id':BASE+'/#website'},'about':{'@id':BASE+'/#software'}}]
+ if page=='home':graph[2]['mainEntity']={'@id':BASE+'/#software'}
+ if page=='codex-figma-ui-tools':
+  graph[2]['mainEntity']={'@id':url+'#article'}
+  graph.append({'@type':'Article','@id':url+'#article','headline':title,'description':description,'inLanguage':'zh-Hans' if lang=='zh' else 'en','author':author,'dateModified':GUIDE_REVIEWED,'mainEntityOfPage':{'@id':url+'#webpage'},'about':{'@id':BASE+'/#software'}})
  if page!='home':graph.append({'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':d['home'],'item':BASE+'/'+path(lang)},{'@type':'ListItem','position':2,'name':d[page],'item':url}]})
  structured = json.dumps({'@context':'https://schema.org','@graph':graph},ensure_ascii=False).replace('</','<' + chr(92) + '/')
+ text_alternate='' if notfound else f'<link rel="alternate" type="text/markdown" href="{url}index.md" title="Markdown">'
+ reading_links='' if notfound else f'<div class="wrap document-formats"><a href="{local(lang,page)}index.md">'+('本页 Markdown' if lang=='zh' else 'This page as Markdown')+f'</a><a href="{PREFIX}llms.txt">'+('文档索引（llms.txt）' if lang=='zh' else 'Documentation index (llms.txt)')+'</a></div>'
  return f'''<!doctype html>
 <html lang="{'zh-CN' if lang=='zh' else 'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc('404 — Figma UI Restore' if notfound else title)}</title><meta name="description" content="{esc(description)}"><meta name="robots" content="{'noindex,follow' if notfound else 'index,follow,max-image-preview:large'}"><meta name="theme-color" content="#f8f8f5">
-{'' if notfound else f'<link rel="canonical" href="{url}">{alternate}'}
+{'' if notfound else f'<link rel="canonical" href="{url}">{alternate}'}{text_alternate}
 <meta property="og:type" content="website"><meta property="og:site_name" content="Figma UI Restore"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{url}"><meta property="og:locale" content="{'zh_CN' if lang=='zh' else 'en_US'}"><meta property="og:image" content="{asset("social.png",True)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Figma UI Restore — Every detail. Intentionally restored."><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}"><meta name="twitter:image" content="{asset("social.png",True)}">
 <link rel="icon" href="{asset("favicon.svg")}" type="image/svg+xml"><link rel="stylesheet" href="{asset("styles.css")}"><script src="{asset("app.js")}" defer></script><script type="module" src="{asset("feedback.mjs")}"></script><script type="application/ld+json">{structured}</script></head>
 <body><a class="skip-link" href="#main">{d['skip']}</a><header class="site-header"><div class="wrap nav-inner"><a class="brand" href="{local(lang)}" aria-label="Figma UI Restore / {d['home']}"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span><span>Figma UI Restore<span class="brand-dot">.</span></span></a><button class="menu-toggle" type="button" aria-label="{d['menu']}" aria-expanded="false" aria-controls="site-nav"><span aria-hidden="true">☰</span></button><nav id="site-nav" class="site-nav" aria-label="{'主导航' if lang=='zh' else 'Main navigation'}">{nav}<span class="nav-divider"></span><a class="lang-link" href="{local(other,page)}" lang="{other}" hreflang="{'en' if other=='en' else 'zh-Hans'}">{d['lang']}</a><a class="nav-github" href="{REPO}" aria-label="GitHub">GitHub ↗</a></nav></div></header>
-<main id="main">{body}</main><footer class="site-footer"><div class="wrap footer-top"><div><a class="brand" href="{local(lang)}">Figma UI Restore<span class="brand-dot">.</span></a><p>{d['footer']}</p></div><nav aria-label="{'页脚导航' if lang=='zh' else 'Footer'}">{link(lang,'install',d['install'])}{link(lang,'verification',d['verification'])}<a href="{REPO}/releases">Releases ↗</a><a href="{REPO}/issues" data-feedback-open>{'反馈问题' if lang=='zh' else 'Report an issue'} ↗</a></nav></div><div class="wrap footer-bottom"><span>© 2026 <a href="https://github.com/fukuang-dev">fukuang-dev</a> · <a href="{REPO}/blob/main/LICENSE">MIT License</a></span><span>{d['legal']}</span></div></footer>{feedback(lang)}<div class="sr-only" id="copy-status" role="status" aria-live="polite"></div>{analytics()}</body></html>'''
+<main id="main">{body}</main><footer class="site-footer"><div class="wrap footer-top"><div><a class="brand" href="{local(lang)}">Figma UI Restore<span class="brand-dot">.</span></a><p>{d['footer']}</p></div><nav aria-label="{'页脚导航' if lang=='zh' else 'Footer'}">{link(lang,'install',d['install'])}{link(lang,'verification',d['verification'])}<a href="{REPO}/releases">Releases ↗</a><a href="{REPO}/issues" data-feedback-open>{'反馈问题' if lang=='zh' else 'Report an issue'} ↗</a></nav></div>{reading_links}<div class="wrap footer-bottom"><span>© 2026 <a href="https://github.com/fukuang-dev">fukuang-dev</a> · <a href="{REPO}/blob/main/LICENSE">MIT License</a></span><span>{d['legal']}</span></div></footer>{feedback(lang)}<div class="sr-only" id="copy-status" role="status" aria-live="polite"></div>{analytics()}</body></html>'''
 
 
 def build(base_url):
@@ -278,9 +301,11 @@ def build(base_url):
  OUT.mkdir(parents=True)
  shutil.copytree(ROOT/'website/assets',OUT/'assets')
  for lang in LABELS:
-  for page,fn in [('home',home),('install',install),('workflows',workflows),('verification',verification)]:
+  for page,fn in [('home',home),('install',install),('workflows',workflows),('verification',verification),('codex-figma-ui-tools',tools)]:
    target=OUT/path(lang,page)/'index.html';target.parent.mkdir(parents=True,exist_ok=True)
-   target.write_text(render(lang,page,fn(lang)),encoding='utf-8')
+   body=fn(lang)
+   target.write_text(render(lang,page,body),encoding='utf-8')
+   target.with_suffix('.md').write_text(markdown_document(body,BASE+'/'+path(lang,page),*META[lang][page]),encoding='utf-8')
  missing=f'<section class="wrap section not-found"><span class="eyebrow">404 / PAGE NOT FOUND</span><h1>这页走丢了。<br>This page is missing.</h1><p>请从首页继续，或在 GitHub 报告失效链接。<br>Start from home, or report a broken link on GitHub.</p>{link("zh","home","返回首页 / Back home ↗","button primary")}</section>'
  (OUT/'404.html').write_text(render('zh','home',missing,notfound=True),encoding='utf-8')
  ns='http://www.sitemaps.org/schemas/sitemap/0.9'
@@ -289,8 +314,19 @@ def build(base_url):
  for lang in LABELS:
   for page in PAGES:SubElement(SubElement(xml,'{'+ns+'}url'),'{'+ns+'}loc').text=BASE+'/'+path(lang,page)
  ElementTree(xml).write(OUT/'sitemap.xml',encoding='utf-8',xml_declaration=True)
+ entries=['# Figma UI Restore','',
+  '> Open-source, MIT-licensed Codex skill for Figma UI implementation, focused fixes and read-only audits. 开源 Codex UI 还原技能。',
+  '', 'The skill provides a workflow. Figma authorization, model access and browser tools are supplied separately. Maintained by fukuang-dev; independent of OpenAI and Figma.',
+  '', '## Documentation / 文档', '']
+ for lang in LABELS:
+  for page in PAGES:
+   title,description=META[lang][page]
+   entries.append(f'- [{title}]({BASE}/{path(lang,page)}index.md): {description}')
+ entries+=['','## Project evidence / 项目依据','',f'- [Source code]({REPO})',f'- [Verification matrix]({REPO}/blob/main/docs/verification.md)',f'- [MIT license]({REPO}/blob/main/LICENSE)','',
+  'Markdown pages are generated from the same visible HTML content. Canonical HTML URLs are included in each document. This is an optional reading index; it does not guarantee search or AI inclusion.','']
+ (OUT/'llms.txt').write_text('\n'.join(entries),encoding='utf-8')
  (OUT/'.nojekyll').write_text('',encoding='utf-8')
- print(f'Built 8 localized pages, 404, sitemap and local assets: {OUT}')
+ print(f'Built {len(PAGES)*len(LABELS)} localized pages and Markdown exports, 404, sitemap, llms.txt and local assets: {OUT}')
 
 if __name__=='__main__':
  parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--base-url',default='https://fukuang-dev.github.io/figma-ui-restore')

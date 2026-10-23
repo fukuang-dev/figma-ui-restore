@@ -1,8 +1,10 @@
 # Figma UI Restore
 
-**Restore interfaces from design evidence, then verify them in a real browser.**
+**Implement Figma product UI with Codex from design evidence, then verify it in a real browser.**
 
 [中文](README.md) · [Offline exercise](examples/offline-card/README.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)
+
+[Website and installation](https://fukuang-dev.github.io/figma-ui-restore/en/) · [Codex Figma UI tools: MCP, skills and browser verification](https://fukuang-dev.github.io/figma-ui-restore/en/codex-figma-ui-tools/)
 
 A standalone Codex skill for full-page implementations, focused visual fixes, and read-only UI audits. It packages a practical loop: read the design → locate the implementation → make scoped changes → compare browser screenshots → fix and re-check.
 

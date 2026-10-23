@@ -1,8 +1,10 @@
 # Figma UI Restore
 
-**让 Codex 根据设计证据还原 UI，并在真实浏览器中核对结果。**
+**让 Codex 根据 Figma 设计证据还原产品 UI，并在真实浏览器中核对结果。**
 
 [English](README.en.md) · [离线练习](examples/offline-card/README.md) · [更新记录](CHANGELOG.md) · [MIT License](LICENSE)
+
+[官网与安装](https://fukuang-dev.github.io/figma-ui-restore/) · [Codex 连接 Figma 还原 UI：工具选型指南](https://fukuang-dev.github.io/figma-ui-restore/codex-figma-ui-tools/)
 
 适用于整页还原、局部视觉修复和只读 UI 验收。把“读取设计 → 定位现有实现 → 最小修改 → 截图对照 → 修正复验”封装为一份可独立安装的 Skill，并提供使用同一份技能内容的插件包装。
 

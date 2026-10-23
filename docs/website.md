@@ -4,7 +4,7 @@ Public site: [Figma UI Restore](https://fukuang-dev.github.io/figma-ui-restore/)
 
 ## Source and local checks
 
-`website/build.py` generates eight complete HTML pages: Chinese home, installation, workflows and verification, plus equivalent English pages. It also generates a real 404 page and sitemap, and copies local assets. Only Python 3.10+ standard library is required. The skill installer and website do not need each other to run.
+`website/build.py` generates ten complete HTML pages: Chinese home, installation, workflows, verification and tool selection, plus equivalent English pages. It also generates matching Markdown documents, an optional `llms.txt` reading index, a real 404 page and sitemap, and copies local assets. Only Python 3.10+ standard library is required. The skill installer and website do not need each other to run.
 
 ```bash
 python3 website/build.py
@@ -14,7 +14,7 @@ node --check website/assets/app.js
 
 Output: `dist/site/` (ignored; do not commit generated pages or screenshots). To preview the production base path, serve a temporary parent directory containing `figma-ui-restore/` with the output files inside. Open `http://localhost:8000/figma-ui-restore/` after starting a local HTTP server on that directory. Do not serve the repository root or Git metadata.
 
-Edit page content and templates in `website/build.py`, styles and behavior in `website/assets/`. Asset URLs include content fingerprints; changing CSS, JavaScript, the favicon or social image changes its URL query automatically, preventing stale styles after deployment. The original social card is a committed 1200×630 PNG; the favicon and teaching illustrations are original assets, not private Figma exports. No third-party fonts are loaded. The official deployment loads the owner-configured Cloudflare Web Analytics beacon for aggregate website metrics; local builds and forks leave it off by default. Feedback uses the Web3Forms API only after an explicit form submission; the rest of the website does not require an account or backend API. GitHub itself operates the hosting service; this is not a claim that the host keeps no access logs.
+Edit page content and templates in `website/build.py`, the tool-selection guide and Markdown exporter in `website/discovery.py`, and styles and behavior in `website/assets/`. Asset URLs include content fingerprints; changing CSS, JavaScript, the favicon or social image changes its URL query automatically, preventing stale styles after deployment. The original social card is a committed 1200×630 PNG; the favicon and teaching illustrations are original assets, not private Figma exports. No third-party fonts are loaded. The official deployment loads the owner-configured Cloudflare Web Analytics beacon for aggregate website metrics; local builds and forks leave it off by default. Feedback uses the Web3Forms API only after an explicit form submission; the rest of the website does not require an account or backend API. GitHub itself operates the hosting service; this is not a claim that the host keeps no access logs.
 
 ## Publishing
 
@@ -26,10 +26,17 @@ The source version is read from `plugin.json`. Fixed installation commands point
 
 - Each indexable page has a unique title/description, self-canonical URL, complete visible HTML, one H1 and reciprocal Chinese/English hreflang links.
 - English lives under `/en/`; language links preserve the corresponding document. No language detection redirects hide content from crawlers.
-- JSON-LD describes the real project as SoftwareSourceCode and connects WebSite/WebPage/BreadcrumbList. There are no invented ratings, customer counts or reviews.
-- `sitemap.xml` contains only the eight canonical pages. The 404 page is noindex. The project path is included in every local asset, canonical, share image and language URL.
+- JSON-LD describes the real project as SoftwareSourceCode and connects WebSite/WebPage/BreadcrumbList. Project identity stays consistent across documents in the same language. The tool-selection guide adds an Article with a visible author and actual source-review date. There are no invented ratings, customer counts or reviews.
+- `sitemap.xml` contains only the ten canonical HTML pages. The 404 page is noindex. The project path is included in every local asset, canonical, share image and language URL.
 - Social metadata uses the local PNG. Essential content and navigation remain usable without JavaScript; copy feedback and the illustrative comparison are progressive enhancements.
 - Project Pages live in a subdirectory. A `robots.txt` in that subdirectory would not control crawling: robots must be served at the domain root. We do not add a misleading subdirectory robots file or change the account's root site. Inspect the root robots policy if crawling fails.
+- Markdown exports are generated from the visible main content, retain commands and source links, and link back to their canonical HTML document. Footer links and `rel="alternate" type="text/markdown"` expose these representations. `llms.txt` is an optional reading index, not a crawler permission file, indexing requirement or ranking guarantee. Do not maintain a separate AI-only set of product claims.
+
+For the query-intent audit, source references, owner-side indexing steps and measurement plan, see [Search discovery / SEO and GEO](search-discovery.md). Update the guide's visible review date and `GUIDE_REVIEWED` together only after actually reviewing its sources; builds must not invent fresh dates for unchanged content.
+
+### Discovery revision — 2026-10-23
+
+Replaced the abstract home headline with explicit Codex/Figma UI positioning and added a sourced, bilingual tool-selection guide. Ten HTML pages now have matching Markdown documents and an optional reading index. Browser checks measured all ten routes at 320px without document horizontal overflow; the Chinese home and guide were visually inspected at the default 1280px viewport, the English guide at 320px and 820px, and the Chinese guide's comparison container at 320px. Mobile navigation and corresponding-document language switching worked. The Markdown endpoint returned HTTP 200 with `text/markdown`; the browser may download it rather than render it. Static checks cover source-command fidelity and exported links. Existing seven Python distribution tests and ten Node feedback tests passed. These are local verification results; no search ownership verification, indexing submission or ranking improvement has been established.
 
 After deployment, the owner can verify the URL-prefix property in Google Search Console and submit the sitemap. Add a verification meta tag only when the owner provides the intended token or completes the account setup. No Search Console property has been created or sitemap submitted by this source change. Successful deployment and correct metadata do not guarantee indexing or rankings.
 
